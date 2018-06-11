@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/remoteform</path>
+    <page_callback>CRM_Remoteform_Page_RemoteForm</page_callback>
+    <title>RemoteForm</title>
+    <access_arguments>profile create</access_arguments>
+  </item>
+</menu>
