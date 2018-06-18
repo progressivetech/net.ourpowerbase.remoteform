@@ -15,7 +15,6 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
 
     try {
       $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
-      $this->enhanceResults($result['values']);
       $this->exitSuccess($result['values']);
     }
     catch (CiviCRM_API3_Exception $e) {
@@ -23,36 +22,6 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     }
   }
 
-  function enhanceResults(&$values) {
-    reset($values);
-    foreach($values as $id => $value) {
-      CRM_Core_Error::debug_var('value', $value);
-      if (preg_match('/^custom_([0-9]+)/', $value['field_name'], $matches)) {
-        // Lookup the custom field parameters.
-        $result = civicrm_api3('CustomField', 'getsingle', array('id' => $matches[1]));
-        $values[$id]['html_type'] = $result['html_type'];
-        if (!empty($result['option_group_id'])) {
-          $params = array('option_group_id' => $result['option_group_id'], 'is_active' => 1);
-          $options_result = civicrm_api3('OptionValue', 'get', $params);
-          foreach($options_result['values'] as $option) {
-            $option_id = $option['value'];
-            $option_label = $option['label'];
-            $values[$id]['options'][$option_id] = $option_label;
-          }
-        }
-      }
-      else {
-        // Core fields might also have options
-        $options = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', $value['field_name']);
-        if (!empty($options)) {
-          $values[$id]['html_type'] = 'select';
-          foreach($options as $option_id => $option_label) {
-            $values[$id]['options'][$option_id] = $option_label;
-          }
-        }
-      }
-    }
-  }
   function exitError($data) {
     CRM_Utils_JSON::output(civicrm_api3_create_error($data));
   }
@@ -96,42 +65,32 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     }
 
     $entity = $input->entity;
-    if ($entity == 'UFField') {
+    if ($entity == 'Profile') {
       // Ensure this site allows access to profiles.
       if (!CRM_Core_Permission::check('profile create')) {
         throw new Exception("You don't have permission to create contacts via profiles.");
       }
       $action = $input->action;
-      if ($action == 'get') {
-        $input_params = get_object_vars($input->params);
-        if (!array_key_exists('uf_group_id', $input_params)) {
-          throw new Exception("Missing uf_group_id.");
-        }
+      $input_params = get_object_vars($input->params);
+      if ($action == 'getfields') {
+        // Sanitize input parameters.
+        $api_action = $input_params['api_action'] == 'submit' ? 'submit' : NULL;
+        $get_options = $input_params['get_options'] == 'all' ? 'all' : NULL;
         $params = array(
-          'uf_group_id' => intval($input_params['uf_group_id'])
+          'profile_id' => intval($input_params['profile_id']),
+          'api_action' => $api_action,
+          'get_options' => $get_options 
         );
         return array(
-          'entity' => $entity,
-          'action' => $action,
+          'entity' => 'Profile',
+          'action' => 'getfields',
           'params' => $params
         );
       }
-      else {
-        throw new Exception("That action is not allowed.");
-      }
-    }
-    elseif ($entity == 'Profile') {
-      // Ensure this site allows access to profiles.
-      if (!CRM_Core_Permission::check('profile create')) {
-        throw new Exception("You don't have permission to create contacts via profiles.");
-      }
-      $action = $input->action;
       if ($action == 'submit') {
-        $input_params = get_object_vars($input->params);
-        CRM_Core_Error::debug_var('params', $input_params);
         return array(
-          'entity' => $entity,
-          'action' => $action,
+          'entity' => 'Profile',
+          'action' => 'submit',
           'params' => $input_params
         );
       }
