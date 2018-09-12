@@ -14,6 +14,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     }
 
     try {
+      CRM_Core_Error::debug_var('data', $data);
       $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
       $this->exitSuccess($result['values']);
     }
@@ -90,6 +91,40 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       if ($action == 'submit') {
         return array(
           'entity' => 'Profile',
+          'action' => 'submit',
+          'params' => $input_params
+        );
+      }
+      else {
+        throw new Exception("That action is not allowed.");
+      }
+    }
+    else if ($entity == 'RemoteFormContributionPage') {
+      // Ensure this site allows access to contributions.
+      if (!CRM_Core_Permission::check('make online contributions')) {
+        throw new Exception("You don't have permission to create contributions.");
+      }
+      $action = $input->action;
+      $input_params = get_object_vars($input->params);
+      if ($action == 'getfields') {
+        // Sanitize input parameters.
+        $api_action = $input_params['api_action'] == 'submit' ? 'submit' : NULL;
+        $get_options = $input_params['get_options'] == 'all' ? 'all' : NULL;
+        $params = array(
+          'contribution_page_id' => intval($input_params['contribution_page_id']),
+          'api_action' => $api_action,
+          'get_options' => $get_options 
+        );
+        return array(
+          'entity' => 'RemoteFormContributionPage',
+          'action' => 'getfields',
+          'params' => $params
+        );
+      }
+      if ($action == 'submit') {
+        $input_params['id'] = $input_params['contribution_page_id'];
+        return array(
+          'entity' => 'RemoteFormContributionPage',
           'action' => 'submit',
           'params' => $input_params
         );

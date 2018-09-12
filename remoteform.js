@@ -99,8 +99,8 @@ function remoteForm(config) {
     userMsg("Sorry, we encountered an error! See console log for more details.");
   }
   // Sanity checking
-  if (cfg.entity != 'Profile') {
-    friendlyErr("Only Profile entity is currently supported.");
+  if (cfg.entity != 'Profile' && cfg.entity != 'ContributionPage') {
+    friendlyErr("Only Profile and ContributionPage entities is currently supported.");
     return false;
   }
 
@@ -136,17 +136,34 @@ function remoteForm(config) {
     parentDiv.appendChild(form);
     // Clear any left over user messages.
     clearUserMsg();
-    var params = {
-      action: 'getfields',
-      entity: cfg.entity,
-      params: {
+
+    var params;
+    var submitEntity = cfg.entity;
+
+    if (cfg.entity == 'Profile') {
+      params = {
         profile_id: cfg.id,
         api_action: 'submit',
         get_options: 'all'
-      }
+      };
+    }
+    else if (cfg.entity == 'ContributionPage') {
+      params = {
+        contribution_page_id: cfg.id,
+        api_action: 'submit',
+        get_options: 'all'
+      };
+      // Override the entity to use our own ContributionPage entity
+      // because the built-in one doesn't handle our use case.
+      submitEntity = 'RemoteFormContributionPage';
+    }
+    var args = {
+      action: 'getfields',
+      entity: submitEntity,
+      params: params 
     };
 
-    post(cfg.url, params, processGetFieldsResponse);
+    post(cfg.url, args, processGetFieldsResponse);
   }
 
   function processGetFieldsResponse(data) {
@@ -154,35 +171,104 @@ function remoteForm(config) {
       friendlyErr(data['error_message']);
       return;
     }
-    buildForm(data['values']);
-    // Hide the init button.
-    initButton.style.display = 'none';
+    if (validateFields(data['values'])) {
+      buildForm(data['values']);
+      // Hide the init button.
+      initButton.style.display = 'none';
+    }
+    else {
+      friendlyErr("Failed to validate fields. You may be trying to use an entity that is too complicated for me.");
+    }
+  }
+
+  // We don't support all entities - just a few and a limited set of
+  // functionalities for the ones we do support. This function is
+  // designed to stop if we can't handle something too complex.
+  function validateFields(fields) {
+    if (cfg.entity == 'ContributionPage') {
+      // We can only handle one payment processor since we don't have 
+      // provide the user the choice of which to use.
+      if (fields.control.payment_processor.length == 0) {
+        adminMsg("Your contribution page does not have a payment processor selected.");
+        return false;
+      }
+      if (fields.control.payment_processor.length > 1) {
+        adminMsg("Your contribution page has more than one payment processor selected. Please only check off one.");
+        return false;
+      }
+    }
+    return true;
   }
 
   function submitData(fields) {
-    var params = {
-      action: 'submit',
-      entity: 'Profile',
-      params: {
-        profile_id: cfg.id
-      }
-    };
+    var params;
+    if (cfg.entity == 'Profile') {
+      params = {
+        action: 'submit',
+        entity: cfg.entity,
+        params: {
+          profile_id: cfg.id
+        }
+      };
+    }
+    else if (cfg.entity == 'ContributionPage') {
+      params = {
+        action: 'submit',
+        entity: 'RemoteFormContributionPage',
+        params: {
+          contribution_page_id: cfg.id
+        }
+      };
+      // We have to submit a total amount. This will be calculated when
+      // we process the price set fields below.
+      var amount = 0.00;
+      var payment_processor = fields.control.payment_processor;
+    }
     for (var key in fields) {
       if (fields.hasOwnProperty(key)) {
         var def = fields[key];
         if (!def.entity) {
           continue;
         }
+
+        var field_name = key;
+
         type = getType(def);
-        if (type == 'checkbox') {
+
+        // Pick a variable type - single value or multiple or dict?
+        if (key == 'credit_card_exp_date_M') {
+          // Credit card expiration date is a dict with month and year keys.
+          var value = {};
+        }
+        else if (type == 'checkbox') {
           // Checkboxes submit a list of values.
           var value = [];
         }
         else {
+          // Everything else is a simple variable.
           var value = null;
         }
-        if (type == 'checkbox' || type == 'radio') {
-          var options = document.getElementsByName(def.name);
+
+        // Obtain the value (varies depending on type and field).
+        
+        // Credit card expiration date has to be submitted
+        // as a an array with M and Y elements.
+        if (key == 'credit_card_exp_date_Y') {
+          // Skip it, we'll pick it up on Month below.
+          continue;
+        }
+        else if (key == 'credit_card_exp_date_M') {
+          field_name = 'credit_card_exp_date';
+          var value = {
+            'M': document.getElementById('credit_card_exp_date_M').value,
+            'Y': document.getElementById('credit_card_exp_date_Y').value
+          };
+        }
+        else if (type == 'hidden') {
+          value = def.default_value;
+        }
+        else if (type == 'checkbox' || type == 'radio') {
+          var options = document.getElementsByName(key);
           for (var i = 0; i < options.length; i++) {
             if (options[i].checked) {
               if (type == 'checkbox') {
@@ -191,14 +277,36 @@ function remoteForm(config) {
               else {
                 value = options[i].value;
               }
+
+              // If this is a price set field, then we will need to calculate
+              // the amount. Either it will be an 'Other_Amount' option, which
+              // means we have to find the Other_Amount field to get the amount
+              // or it will have the amount as a data-amount attribute.
+              if (/price_[0-9]+/.test(field_name)) {
+                if (options[i].hasAttribute('data-is-other-amount')) {
+                  // Get the total from the Other_Amount field.
+                  amount = parseFloat(document.getElementById('Other_Amount').value);
+                  console.log("Amount is now ", amount);
+                }
+                else if (options[i].hasAttribute('data-amount')) {
+                  amount = parseFloat(options[i].getAttribute('data-amount'));
+                }
+              }
             }
           }
         }
         else {
-          var value = document.getElementById(def.name).value;
+          var value = document.getElementById(key).value;
         }
-        params['params'][def.name] = value;
+
+        params['params'][field_name] = value;
       }
+    }
+    if (amount) {
+      params['params']['amount'] = amount;
+    }
+    if (payment_processor) {
+      params['params']['payment_processor_id'] = payment_processor;
     }
     post(cfg.url, params, processSubmitDataResponse);
   }
@@ -227,13 +335,18 @@ function remoteForm(config) {
   /**
    * Post data to the CiviCRM server.
    */
-  function post(url, params, onSuccess = console.log, onError = console.log) {
+  function post(url, params, onSuccess = console.log, onError = friendlyErr) {
     var request = new XMLHttpRequest();
     request.open('POST', url, true);
     request.onreadystatechange = function() {
       if (request.readyState === 4) {
         if (request.status >= 200 && request.status < 400) {
-          onSuccess(JSON.parse(request.responseText));
+          try {
+            onSuccess(JSON.parse(request.responseText));
+          }
+          catch (err) {
+            onError(err);
+          }
         } else {
           onError(new Error('Response returned with non-OK status'));
           console.log(request);
@@ -264,7 +377,10 @@ function remoteForm(config) {
         }
         var field;
         var type = getType(def);
-        form.appendChild(cfg.createFieldDivFunc(def, type, createField, wrapField));
+        var html = cfg.createFieldDivFunc(key, def, type, createField, wrapField);
+        if (html) {
+          form.appendChild(html);
+        }
       }
     };
     // Now add submit and cancel buttons.
@@ -300,9 +416,12 @@ function remoteForm(config) {
    * This function can be overridden using the createFieldDivFunc config
    * parameter.
    */
-  function createFieldDiv(def, type, createFieldFunc, wrapFieldFunc) {
-    var field = createFieldFunc(def, type);
-    return wrapFieldFunc(def, field);
+  function createFieldDiv(key, def, type, createFieldFunc, wrapFieldFunc) {
+    var field = createFieldFunc(key, def, type);
+    if (field === null) {
+      return null;
+    }
+    return wrapFieldFunc(key, def, field);
   }
 
   /**
@@ -330,31 +449,34 @@ function remoteForm(config) {
     return type;
   }
 
-  function createField(def, type) {
+  function createField(key, def, type) {
     if (type == 'select') {
-      return createSelect(def);
+      return createSelect(key, def);
     }
     else if (type == 'email') {
-      return createEmailInput(def);
+      return createEmailInput(key, def);
     }
     else if (type == 'checkbox') {
-      return createCheckboxesOrRadios(def, 'checkbox');
+      return createCheckboxesOrRadios(key, def, 'checkbox');
     }
     else if (type == 'radio') {
-      return createCheckboxesOrRadios(def, 'radio');
+      return createCheckboxesOrRadios(key, def, 'radio');
     }
     else if (type == 'textarea') {
-      return createTextArea(def);
+      return createTextArea(key, def);
     }
     else if (type == 'date') {
-      return createDate(def);
+      return createDate(key, def);
+    }
+    else if (type =='hidden') {
+      return null;
     }
     else {
-      return createTextInput(def);
+      return createTextInput(key, def);
     }
   }
 
-  function wrapField(def, field) {
+  function wrapField(key, def, field) {
     var div = document.createElement('div');
     div.className = cfg.css.inputDiv;
     if (def.help_pre) {
@@ -372,7 +494,7 @@ function remoteForm(config) {
       // sr_only will hide except for screen readers.
       label.className = cfg.css.sr_only;
     }
-    label.for = def.id;
+    label.for = key;
     label.innerHTML = def.title;
     div.appendChild(label);
 
@@ -389,8 +511,11 @@ function remoteForm(config) {
   /**
    * Helper for creating <input> fields.
    */
-  function createInput(def, inputType = null) {
+  function createInput(key, def, inputType = null) {
     var field = document.createElement('input');
+    if (key) {
+      field.id = key;
+    }
     if (inputType) {
       field.type = inputType;
     }
@@ -401,32 +526,30 @@ function remoteForm(config) {
       field.placeholder = def.title;
     }
     field.className = cfg.css.input;
-    if (def.name) {
-      field.id = def.name;
-    }
     if (def.default_value) {
       field.value = def.default_value;
     }
     return field;
   }
   
-  function createEmailInput(def) {
-    return createInput(def, 'email');
+  function createEmailInput(key, def) {
+    return createInput(key, def, 'email');
   }
 
-  function createTextInput(def) {
-    return createInput(def, 'text');
+  function createTextInput(key, def) {
+    return createInput(key, def, 'text');
   }
 
   function createSubmit() {
     var def = {};
-    return createInput(def, 'submit');
+    var key = null;
+    return createInput(key, def, 'submit');
   }
 
   /**
    * Checkbox and Radio collections.
    */
-  function createCheckboxesOrRadios(def, type) {
+  function createCheckboxesOrRadios(key, def, type) {
     // Creating enclosing div for the collection.
     var collectionDiv = document.createElement('div');
 
@@ -439,6 +562,26 @@ function remoteForm(config) {
     
     // Another div to enclose just the options.
     var optionsDiv = document.createElement('div');
+
+    var isPriceSet = false;
+    var hasOtherAmountOption = false;
+    // Treat price sets differently.
+    if (/price_[0-9]+/.test(key)) {
+      isPriceSet = true;
+
+      // If there is an other_amount option, we need to know up front so
+      // we can add event listeners that will make a new other amount
+      // text box appear.
+      for (var option in def.options) {
+        if (def.options.hasOwnProperty(option)) {
+          if (def.options.name == 'Other_amount') {
+            hasOtherAmountOption = true;
+          }
+        }
+      }
+    }
+
+    // Now iterate over options again to build out the html.
     for (var option in def.options) {
       if (def.options.hasOwnProperty(option)) {
         // Another div to enclose this particular option.
@@ -450,18 +593,81 @@ function remoteForm(config) {
         // Create the input.
         var optionInput = document.createElement('input');
         optionInput.type = type;
-        optionInput.value = option;
+
         // We set an id so the label below can properly reference the right
         // input.
         optionInput.id = def.name + '-' + option;
         optionInput.className = cfg.css.checkInput;
-        // We use the name field to find the values when we submit.
-        optionInput.name = def.name;
 
+        // We use the name field to find the values when we submit. This 
+        // value has to be unique (in case we have multiple pricesets).
+        optionInput.name = key;
+
+        // Option display on the option type.
+        var optionDisplay = null; 
+        if (isPriceSet) {
+          // Priceset options are a dict of values.
+          var optionObj = def.options[option];
+          var prefix;
+          if (optionObj['currency'] == 'USD') {
+            prefix = '$';
+          }
+
+          // Price set options called "Other_Amount" are handled differently.
+          var optionDisplay;
+          if (optionObj['name'] == 'Other_Amount') {
+            // Don't display "amount" (because with other_amount it is 
+            // set to is the minimum amount).
+            optionDisplay = optionObj['label'];
+
+            // Add an attribute so we know it is an Other_Amount field when
+            // we are calculating the total amount to submit.
+            optionInput.setAttribute('data-is-other-amount', 1);
+
+            // If clicked, show other amount text box.
+            optionInput.addEventListener('click', function(e) {
+              // If Other_Amount is chosen, display box for user to enter
+              // the other amount. It should be inserted after the enclosing
+              // div of the other amount option.
+              var referenceNode = document.getElementById(optionInput.id).parentNode;
+              var otherAmountDef = {
+                'api.required': 1,
+                title: 'Other Amount'
+              };
+
+              var otherAmountEl = cfg.createFieldDivFunc('Other_Amount', otherAmountDef, 'text', createField, wrapField);
+              referenceNode.parentNode.insertBefore(otherAmountEl, referenceNode.nextSibling);
+            });
+          }
+          else {
+            optionDisplay = optionObj['label'] + ' (' + prefix + parseFloat(optionObj['amount']).toFixed(2) + ')';
+            optionInput.setAttribute('data-amount', optionObj['amount']);
+            if (hasOtherAmountOption) {
+              // This is not an other amount field, but since there is 
+              // an other amount option, we have to hide the other amount
+              // text field if it is clicked on.
+              optionInput.addEventListener('click', function(e) {
+                document.getElementById('Other_Amount').style.display = 'none';
+              });
+            }
+          }
+        }
+        else {
+          optionDisplay = def.options[option];
+        }
+
+        optionInput.value = option;
+        
         // Create the label.
         var optionLabel = document.createElement('label');
         optionLabel.for = optionInput.id; 
-        optionLabel.innerHTML = def.options[option];
+
+        // We have both simple options (the label is the value, e.g.
+        // options = [ { key: label }, { key: label} ] and also 
+        // complex options (used for price sets) which have more data:
+        // options = [ {key: { label: label, amount: amount, name: name}, etc.
+        
+        optionLabel.innerHTML = optionDisplay;
         optionLabel.className = cfg.css.checkLabel;
 
         // Insert all our elements.
@@ -474,10 +680,10 @@ function remoteForm(config) {
     return collectionDiv;
   }
 
-  function createSelect(def) {
+  function createSelect(key, def) {
     // Create the select element.
     var selectInput = document.createElement('select');
-    selectInput.id = def.name;
+    selectInput.id = key;
     if (def["api.required"] == 1) {
       selectInput.setAttribute('required', 'required');
     }
@@ -489,7 +695,7 @@ function remoteForm(config) {
       // no value that displays the label in the drop down.
       optionEl = document.createElement('option');
       optionEl.value = '';
-      optionEl.innerHTML = '--Select ' + def.title + '--';
+      optionEl.innerHTML = '--' + def.title + '--';
       selectInput.appendChild(optionEl);
     }
     for (var option in def.options) {
@@ -504,7 +710,7 @@ function remoteForm(config) {
     return selectInput;
   }
   
-  function createTextArea(def) {
+  function createTextArea(key, def) {
     field = document.createElement('textarea');
     if (def["api.required"] == 1) {
       field.setAttribute('required', 'required');
@@ -513,8 +719,8 @@ function remoteForm(config) {
       field.placeholder = def.title;
     }
     field.className = cfg.css.input;
-    if (def.name) {
-      field.id = def.name;
+    if (key) {
+      field.id = key;
     }
     if (def.default_value) {
       field.innerHTML = def.default_value;
@@ -523,8 +729,8 @@ function remoteForm(config) {
     return field;
   }
 
-  function createDate(def) {
-    return createInput(def, 'date'); 
+  function createDate(key, def) {
+    return createInput(key, def, 'date'); 
   }
 
   /**

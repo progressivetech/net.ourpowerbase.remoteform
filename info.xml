@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <extension key="net.ourpowerbase.remoteform" type="module">
   <file>remoteform</file>
-  <name>Remote Form</name>
-  <description>Add forms to remote web sites that can post to your CiviCRM database via ajax calls.</description>
+  <name>FIXME</name>
+  <description>FIXME</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Jamie McClelland</author>

@@ -160,4 +160,8 @@ function remoteform_civicrm_idsException(&$skip) {
   $skip[] = 'civicrm/remoteform';
 }
 
-
+// Ensure our overridden API is included until we (hopefully) get it included
+// upstream.
+if (!function_exists('_civicrm_api3_contribution_page_submit_spec')) {
+  require_once('api/v3/ContributionPage/Submit.php');
+}
