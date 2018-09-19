@@ -200,34 +200,24 @@ function _rf_add_credit_card_fields(&$params) {
  * @throws API_Exception
  */
 function civicrm_api3_remote_form_contribution_page_Submit($params) {
-  CRM_Core_Error::debug_log_message("starting submit");
-  CRM_Core_Error::debug_var('params', $params);
-  $contribution_page_id = $params['contribution_page_id'];
-  $result = civicrm_api3('ContributionPage', 'get', array('id' => $contribution_page_id));
-  $contribution_page = $result['values'][$contribution_page_id];
+  // We need some basic information about the contribution page being submitted.
+  $params['id'] = $params['contribution_page_id'];
 
-  $_SERVER['REQUEST_METHOD']= 'GET';
-  $form = new CRM_Contribute_Form_Contribution_Main();
-  //$form->_values['is_monetary'] = $contribution_page['is_monetary'];
-  //$form->_values['is_pay_later'] = $contribution_page['is_pay_later'];
-  $form->_priceSetId = $params['price_set_id']; 
-  $priceFields = civicrm_api3('PriceField', 'get', array('id' => $form->_priceSetId));
-  $form->_priceSet['fields'] = $priceFields['values'];
-  $form->_paymentProcessor = array(
-    'billing_mode' => CRM_Core_Payment::BILLING_MODE_FORM,
-    'object' => Civi\Payment\System::singleton()->getById($params['payment_processor_id']),
-    'is_recur' => TRUE,
-  );
-  $values = array(
-    'title' => $contribution_page['title'],
-    'financial_type_id' => $contribution_page['financial_type_id'],
-    'currency' => $contribution_page['currency'],
-    'is_monetary' => $contribution_page['is_monetary']
-  );
-  $form->_values = $values; 
-  $form->controller = new CRM_Contribute_Controller_Contribution();
-  $form->submit($params);
+  $result = CRM_Contribute_Form_Contribution_RemoteformConfirm::submit($params);
+  //$result = _remote_form_contribution_page_submit($params);
 
-  CRM_Core_Error::debug_log_message("submitted");
-  
+  // $result gives us a contribution object, which will cause 
+  // civicrm_api3_create_success to fail. We have to convert it to
+  // an array and remove some of the db object garbage that we don't need.
+  $contribution = (Array)$result['contribution'];
+  $result['contribution'] = array();
+  foreach($contribution as $key => $value) {
+    $first_character = substr($key, 0, 1);
+    if ($first_character == '_' || $key == 'N' ) {
+      continue;
+    }
+    $result['contribution'][$key] = $value;
+  }
+  return civicrm_api3_create_success(array($result), $params, 'RemoteFormContributionPage', 'submit');
 }
+
