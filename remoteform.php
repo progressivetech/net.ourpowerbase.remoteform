@@ -165,3 +165,4 @@ function remoteform_civicrm_idsException(&$skip) {
 if (!function_exists('_civicrm_api3_contribution_page_submit_spec')) {
   require_once('api/v3/ContributionPage/Submit.php');
 }
+

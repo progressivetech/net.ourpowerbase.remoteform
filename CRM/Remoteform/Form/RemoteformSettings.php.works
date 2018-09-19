@@ -1,0 +1,96 @@
+<?php
+
+use CRM_Remoteform_ExtensionUtil as E;
+
+/**
+ * Form controller class
+ *
+ * @see https://wiki.civicrm.org/confluence/display/CRMDOC/QuickForm+Reference
+ */
+class CRM_Remoteform_Form_RemoteformSettings extends CRM_Core_Form {
+  private $_settingFilter = array('group' => 'remoteform');
+  public function buildQuickForm() {
+    $defaults['remoteform_cors_urls'] = implode(" ", civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_cors_urls')));
+
+    // add form elements
+    $required = TRUE;
+
+    $this->add(
+      'textarea',
+      'remoteform_cors_urls',
+      E::ts("Allow forms to be submitted from the following locations. Please list full URL (including https://), one per line"),
+      $required
+    );
+
+    $this->addButtons(array(
+      array(
+        'type' => 'submit',
+        'name' => E::ts('Submit'),
+        'isDefault' => TRUE,
+      ),
+    ));
+    $this->setDefaults($defaults);
+    // export form elements
+    $this->assign('elementNames', $this->getRenderableElementNames());
+    parent::buildQuickForm();
+  }
+
+  public function postProcess() {
+    $values = $this->exportValues();
+    $save = array();
+    $save['remoteform_cors_urls'] = explode(' ', $values['remoteform_cors_urls']);
+
+    $session = CRM_Core_Session::singleton();
+
+    try {
+      civicrm_api3('Setting', 'create', $save);
+      $session::setStatus(E::ts("Your settings were saved."), E::ts('Saved'), 'success');
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      $session::setStatus(E::ts("There was an error applying your changes."), E::ts('Error'), 'error');
+    }
+
+  }
+
+  /**
+   * Rules callback. 
+  */
+  public function addRules() {
+    $this->addFormRule(array('CRM_Remoteform_Form_RemoteformSettings', 'myRules'));
+  }
+
+  function myrules($values) {
+    $errors = array();
+
+    $urls = explode("\n", $values['remoteform_cors_urls']);
+    foreach($urls as $url) {
+      if (substr($url, 0, 8) != 'https://') {
+        $errors['remoteform_cors_urls'] = E::ts('Please add one URL per line and ensure they all start with https://');
+      }
+    }
+
+    return empty($errors) ? TRUE : $errors;
+
+  }
+  /**
+   * Get the fields/elements defined in this form.
+   *
+   * @return array (string)
+   */
+  public function getRenderableElementNames() {
+    // The _elements list includes some items which should not be
+    // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
+    // items don't have labels.  We'll identify renderable by filtering on
+    // the 'label'.
+    $elementNames = array();
+    foreach ($this->_elements as $element) {
+      /** @var HTML_QuickForm_Element $element */
+      $label = $element->getLabel();
+      if (!empty($label)) {
+        $elementNames[] = $element->getName();
+      }
+    }
+    return $elementNames;
+  }
+
+}

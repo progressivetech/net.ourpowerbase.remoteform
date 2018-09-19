@@ -6,4 +6,10 @@
     <title>RemoteForm</title>
     <access_arguments>profile create</access_arguments>
   </item>
+  <item>
+    <path>civicrm/admin/remoteform</path>
+    <page_callback>CRM_Remoteform_Form_RemoteformSettings</page_callback>
+    <title>RemoteformSettings</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

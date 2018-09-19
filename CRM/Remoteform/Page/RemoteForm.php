@@ -14,7 +14,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     }
 
     try {
-      CRM_Core_Error::debug_var('data', $data);
+      // CRM_Core_Error::debug_var('data', $data);
       $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
       $this->exitSuccess($result['values']);
     }
@@ -35,10 +35,18 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     // Allow from any origin
     if (isset($_SERVER['HTTP_ORIGIN'])) {
       // CRM_Core_Error::debug_var('_SERVER', $_SERVER);
-      if ($_SERVER['HTTP_ORIGIN'] == 'https://progressivetech.loc.cx') {
-        header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-        header('Access-Control-Allow-Credentials: true');
-        header('Access-Control-Max-Age: 86400');    // cache for 1 day
+      $urls = explode("\n", civicrm_api3('setting', 'getvalue', array('name' => 'remoteform_cors_urls')));
+      foreach($urls as $url) {
+        // Who knows what kind of spaces and line return nonesense we may have.
+        // This regex should kill all the Control Characters (see
+        // https://en.wikipedia.org/wiki/Control_character
+        $url = preg_replace('/[\x00-\x1F\x7F]/', '', trim($url));
+        if ($_SERVER['HTTP_ORIGIN'] == $url) {
+          header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+          header('Access-Control-Allow-Credentials: true');
+          header('Access-Control-Max-Age: 86400');    // cache for 1 day
+          continue;
+        }
       }
     }
 
