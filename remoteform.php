@@ -166,3 +166,83 @@ if (!function_exists('_civicrm_api3_contribution_page_submit_spec')) {
   require_once('api/v3/ContributionPage/Submit.php');
 }
 
+/**
+ * Implements hook_civicrm_buildForm().
+ *
+ * Add remoteform options to key forms in CiviCRM Core.
+ *
+ * @param string $formName
+ * @param CRM_Core_Form $form
+ */
+function remoteform_civicrm_buildForm($formName, &$form) {
+  if ($formName == 'CRM_UF_Form_Group') {
+     // Assumes templates are in a templates folder relative to this file
+    $templatePath = realpath(dirname(__FILE__)."/templates");
+    // Add the field element in the form
+    $form->add('checkbox', 'remoteform_profile_enable', ts('Allow remote submissions to this profile'));
+    // dynamically insert a template block in the page
+    CRM_Core_Region::instance('page-body')->add(array(
+      'template' => "{$templatePath}/profile.tpl"
+    ));
+    $profile_id = intval($form->getVar('_id'));
+    $query = NULL;
+    $absolute = TRUE;
+    $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
+
+    $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
+
+    $code = htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
+      htmlentities('<script> var config = { ') . '<br />' .
+      htmlentities(' url: "' . $post_url . '",') . '<br>' .
+      htmlentities(' id: ' . $profile_id . ',') . '<br/>' .
+      htmlentities(' autoInit: false,') . '<br />' .
+      htmlentities(' displayLabels: false') .  '<br />' .
+      htmlentities('};');
+
+    $form->assign('remoteform_profile_code', $code);
+    $enabled_profiles = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profiles'));
+    if (is_null($enabled_profiles)) {
+      $enabled_profiles = array();
+    }
+    $profile_id = intval($form->getVar('_id'));
+    $defaults['remoteform_profile_enable'] = 0;
+    if (in_array($profile_id, $enabled_profiles)) {
+      $defaults['remoteform_profile_enable'] = 1;
+    }
+    $form->setDefaults($defaults);
+
+  }
+}
+
+/**
+ * Implements hook__civicrm_postProcess().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postProcess/
+ */
+function remoteform_civicrm_postProcess($formName, &$form) {
+  if ($formName == 'CRM_UF_Form_Group') {
+    $vals = $form->_submitValues;
+    $profile_id = intval($form->getVar('_id'));
+    $remoteform_profile_enable = array_key_exists('remoteform_profile_enable', $vals) ? TRUE : FALSE;
+
+    // Handle Default setting.
+    $enabled_profiles = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profiles'));
+    if (is_null($enabled_profiles)) {
+      $enabled_profiles = array();
+    }
+    if ($remoteform_profile_enable) {
+      if (!in_array($profile_id, $enabled_profiles)) {
+        // Update
+        $enabled_profiles[] = $profile_id;
+        civicrm_api3('Setting', 'create', array('remoteform_enabled_profiles' => $enabled_profiles));
+      }
+    }
+    else {
+      if (in_array($profile_id, $enabled_profiles)) {
+        $key = array_search($profile_id, $enabled_profiles);
+        unset($enabled_profiles[$key]);
+        civicrm_api3('Setting', 'create', array('remoteform_enabled_profiles' => $enabled_profiles));
+      }
+    }
+  }
+}

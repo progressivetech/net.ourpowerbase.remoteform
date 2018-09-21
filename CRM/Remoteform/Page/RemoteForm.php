@@ -79,14 +79,22 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       if (!CRM_Core_Permission::check('profile create')) {
         throw new Exception("You don't have permission to create contacts via profiles.");
       }
-      $action = $input->action;
+
+      // Let's see if this particular profile is allowed.
       $input_params = get_object_vars($input->params);
+      $profile_id = intval($input_params['profile_id']);
+      $enabled_profiles = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profiles'));
+      if (!in_array($profile_id, $enabled_profiles)) {
+        throw new Exception("This profile is not configured to accept remote form submissions.");
+      }
+
+      $action = $input->action;
       if ($action == 'getfields') {
         // Sanitize input parameters.
         $api_action = $input_params['api_action'] == 'submit' ? 'submit' : NULL;
         $get_options = $input_params['get_options'] == 'all' ? 'all' : NULL;
         $params = array(
-          'profile_id' => intval($input_params['profile_id']),
+          'profile_id' => $profile_id,
           'api_action' => $api_action,
           'get_options' => $get_options 
         );
@@ -124,6 +132,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
           'get_options' => $get_options 
         );
         
+        CRM_Core_Error::debug_var('params', $params);
         return array(
           'entity' => 'RemoteFormContributionPage',
           'action' => 'getfields',
