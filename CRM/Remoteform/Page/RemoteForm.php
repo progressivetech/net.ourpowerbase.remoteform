@@ -123,6 +123,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
           'api_action' => $api_action,
           'get_options' => $get_options 
         );
+        
         return array(
           'entity' => 'RemoteFormContributionPage',
           'action' => 'getfields',
@@ -131,6 +132,9 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       }
       if ($action == 'submit') {
         $input_params['id'] = $input_params['contribution_page_id'];
+        if (array_key_exists('credit_card_exp_date', $input_params)) {
+          $input_params['credit_card_exp_date'] = (Array)$input_params['credit_card_exp_date'];
+        }
         return array(
           'entity' => 'RemoteFormContributionPage',
           'action' => 'submit',
