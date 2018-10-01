@@ -70,14 +70,14 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     // Ensure the user is not logged in. If we allowed logged in users
     // then we are at risk of a CSRF attack.
     if (CRM_Utils_System::isUserLoggedIn()) {
-      throw new Exception('You cannot use JSSubmit while logged into CiviCRM.');
+      throw new CiviCRM_API3_Exception('You cannot use JSSubmit while logged into CiviCRM.');
     }
 
     $entity = $input->entity;
     if ($entity == 'Profile') {
       // Ensure this site allows access to profiles.
       if (!CRM_Core_Permission::check('profile create')) {
-        throw new Exception("You don't have permission to create contacts via profiles.");
+        throw new CiviCRM_API3_Exception("You don't have permission to create contacts via profiles.");
       }
 
       // Let's see if this particular profile is allowed.
@@ -85,7 +85,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       $profile_id = intval($input_params['profile_id']);
       $enabled_profiles = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profiles'));
       if (!in_array($profile_id, $enabled_profiles)) {
-        throw new Exception("This profile is not configured to accept remote form submissions.");
+        throw new CiviCRM_API3_Exception("This profile is not configured to accept remote form submissions.");
       }
 
       $action = $input->action;
@@ -112,13 +112,13 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         );
       }
       else {
-        throw new Exception("That action is not allowed.");
+        throw new CiviCRM_API3_Exception("That action is not allowed.");
       }
     }
     else if ($entity == 'RemoteFormContributionPage') {
       // Ensure this site allows access to contributions.
       if (!CRM_Core_Permission::check('make online contributions')) {
-        throw new Exception("You don't have permission to create contributions.");
+        throw new CiviCRM_API3_Exception("You don't have permission to create contributions.");
       }
       $action = $input->action;
       $input_params = get_object_vars($input->params);
@@ -151,11 +151,11 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         );
       }
       else {
-        throw new Exception("That action is not allowed.");
+        throw new CiviCRM_API3_Exception("That action is not allowed.");
       }
     }
     else {
-      throw new Exception("That entity is not allowed.");
+      throw new CiviCRM_API3_Exception("That entity is not allowed.");
     }
   }
 }
