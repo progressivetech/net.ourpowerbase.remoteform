@@ -200,11 +200,20 @@ function _rf_add_credit_card_fields(&$params) {
  * @throws API_Exception
  */
 function civicrm_api3_remote_form_contribution_page_Submit($params) {
-  // We need some basic information about the contribution page being submitted.
+  // We translate a few fields to ensure compatability with all payment
+  // processors.
   $params['id'] = $params['contribution_page_id'];
+  $params['month'] = CRM_Core_Payment_Form::getCreditCardExpirationMonth($params);
+  $params['year'] = CRM_Core_Payment_Form::getCreditCardExpirationYear($params);
 
+  // Now, submit.
   $result = CRM_Contribute_Form_Contribution_RemoteformConfirm::submit($params);
-  //$result = _remote_form_contribution_page_submit($params);
+
+  // First check for payment failure.
+  if ($result['is_payment_failure']) {
+    $msg = $result['error']->getMessage();
+    return civicrm_api3_create_error($msg);
+  }
 
   // $result gives us a contribution object, which will cause 
   // civicrm_api3_create_success to fail. We have to convert it to
