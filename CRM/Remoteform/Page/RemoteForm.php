@@ -82,9 +82,9 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
 
       // Let's see if this particular profile is allowed.
       $input_params = get_object_vars($input->params);
-      $profile_id = intval($input_params['profile_id']);
-      $enabled_profiles = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profiles'));
-      if (!in_array($profile_id, $enabled_profiles)) {
+      $id = intval($input_params['profile_id']);
+      $enabled = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profile'));
+      if (!in_array($id, $enabled)) {
         throw new CiviCRM_API3_Exception("This profile is not configured to accept remote form submissions.");
       }
 
@@ -122,6 +122,13 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       }
       $action = $input->action;
       $input_params = get_object_vars($input->params);
+
+      // Make sure this contribution page is configured to accept remote submissions.
+      $id = intval($input_params['contribution_page_id']);
+      $enabled = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_contribution_page'));
+      if (!in_array($id, $enabled)) {
+        throw new CiviCRM_API3_Exception("This contribution page is not configured to accept remote form submissions.");
+      }
       if ($action == 'getfields') {
         // Sanitize input parameters.
         $api_action = $input_params['api_action'] == 'submit' ? 'submit' : NULL;

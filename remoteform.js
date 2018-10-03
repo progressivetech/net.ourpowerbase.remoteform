@@ -192,8 +192,11 @@ function remoteForm(config) {
         adminMsg("Your contribution page does not have a payment processor selected.");
         return false;
       }
-      if (fields.control.payment_processor.length > 1) {
-        adminMsg("Your contribution page has more than one payment processor selected. Please only check off one.");
+      // Make sure we get a single, numeric value for the payment processor
+      // (if more than one is provided, we get an array)
+      if (isNaN(parseFloat(fields.control.payment_processor)) || !isFinite(fields.control.payment_processor)) {
+        adminMsg("Your contribution page has more than one payment processor selected. Please only check off one payment processor.");
+        console.log(fields);
         return false;
       }
     }

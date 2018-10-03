@@ -1,6 +1,0 @@
-{htxt id='remoteform_profile_enable'}
-  <p>
-    {ts}If enabled, you will be able to allow people to fill out this profile from your on web site by including a few lines of javascript code.{/ts}
-  </p>
-{/htxt}
-

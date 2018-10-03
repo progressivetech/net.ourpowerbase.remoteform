@@ -5,7 +5,7 @@
       {$form.remoteform_profile_enable.html}
       {$form.remoteform_profile_enable.label}
       <div class="description">{ts}If enabled, you will be able to allow people to fill out this profile from your on web site by including a few lines of javascript code.{/ts}</div>
-      <div id="remoteform-code-to-copy"><pre>{$remoteform_profile_code}</pre></div>
+      <div id="remoteform-code-to-copy"><pre>{$remoteform_code}</pre></div>
     </td>
   </tr>
 </table>

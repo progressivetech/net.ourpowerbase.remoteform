@@ -138,18 +138,19 @@ function remoteform_civicrm_preProcess($formName, &$form) {
  * Implements hook_civicrm_navigationMenu().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
+ */
+
 function remoteform_civicrm_navigationMenu(&$menu) {
-  _remoteform_civix_insert_navigation_menu($menu, 'Mailings', array(
-    'label' => E::ts('New subliminal message'),
-    'name' => 'mailing_subliminal_message',
-    'url' => 'civicrm/mailing/subliminal',
-    'permission' => 'access CiviMail',
+  _remoteform_civix_insert_navigation_menu($menu, 'Administer/Customize Data and Screens', array(
+    'label' => E::ts('Remote Forms'),
+    'name' => 'Remote Forms',
+    'url' => 'civicrm/admin/remoteform',
+    'permission' => 'access CiviCRM',
     'operator' => 'OR',
     'separator' => 0,
   ));
   _remoteform_civix_navigationMenu($menu);
-} // */
+}
 
 /*
  * Implementation of hook_idsException.
@@ -160,10 +161,59 @@ function remoteform_civicrm_idsException(&$skip) {
   $skip[] = 'civicrm/remoteform';
 }
 
-// Ensure our overridden API is included until we (hopefully) get it included
-// upstream.
-if (!function_exists('_civicrm_api3_contribution_page_submit_spec')) {
-  require_once('api/v3/ContributionPage/Submit.php');
+
+/** 
+ * Get displayable code.
+ *
+ * Return the code that should be displayed so the user can copy and paste it.
+ *
+ */
+function remoteform_get_displayable_code($id, $entity = 'Profile') {
+  $query = NULL;
+  $absolute = TRUE;
+  $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
+  $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
+
+  return 
+      htmlentities('<div id="remoteForm"></div>') . '<br />' .
+      htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
+      htmlentities('<script> var config = { ') . '<br />' .
+      htmlentities(' url: "' . $post_url . '",') . '<br>' .
+      htmlentities(' id: ' . $id . ',') . '<br/>' .
+      htmlentities(' entity: "' . $entity . '",') . '<br/>' .
+      htmlentities(' autoInit: false,') . '<br />' .
+      htmlentities(' displayLabels: false') .  '<br />' .
+      htmlentities('};') . '<br />' .
+      htmlentities('remoteForm(config);') . '<br />' .
+      htmlentities('</script>');
+}
+
+/**
+ * Add field to enable remote forms for this entity.
+ *
+ */
+function remoteform_add_enable_field($form, $name, $label, $code) {
+  $templatePath = realpath(dirname(__FILE__)."/templates");
+
+  // Add the field element in the form
+  $form->add('checkbox', 'remoteform_' . $name . '_enable', $label);
+
+  // dynamically insert a template block in the page
+  CRM_Core_Region::instance('page-body')->add(array(
+    'template' => "{$templatePath}/${name}.tpl"
+  ));
+  $id = intval($form->getVar('_id'));
+
+  $form->assign('remoteform_code', $code);
+  $enabled = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_' . $name));
+  if (is_null($enabled)) {
+    $enabled = array();
+  }
+  $defaults['remoteform_' . $name . '_enable'] = 0;
+  if (in_array($id, $enabled)) {
+    $defaults['remoteform_' . $name . '_enable'] = 1;
+  }
+  $form->setDefaults($defaults);
 }
 
 /**
@@ -175,42 +225,50 @@ if (!function_exists('_civicrm_api3_contribution_page_submit_spec')) {
  * @param CRM_Core_Form $form
  */
 function remoteform_civicrm_buildForm($formName, &$form) {
-  if ($formName == 'CRM_UF_Form_Group') {
-     // Assumes templates are in a templates folder relative to this file
-    $templatePath = realpath(dirname(__FILE__)."/templates");
-    // Add the field element in the form
-    $form->add('checkbox', 'remoteform_profile_enable', ts('Allow remote submissions to this profile'));
-    // dynamically insert a template block in the page
-    CRM_Core_Region::instance('page-body')->add(array(
-      'template' => "{$templatePath}/profile.tpl"
-    ));
-    $profile_id = intval($form->getVar('_id'));
-    $query = NULL;
-    $absolute = TRUE;
-    $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
-
-    $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
-
-    $code = htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
-      htmlentities('<script> var config = { ') . '<br />' .
-      htmlentities(' url: "' . $post_url . '",') . '<br>' .
-      htmlentities(' id: ' . $profile_id . ',') . '<br/>' .
-      htmlentities(' autoInit: false,') . '<br />' .
-      htmlentities(' displayLabels: false') .  '<br />' .
-      htmlentities('};');
-
-    $form->assign('remoteform_profile_code', $code);
-    $enabled_profiles = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profiles'));
-    if (is_null($enabled_profiles)) {
-      $enabled_profiles = array();
+  if ($formName == 'CRM_Contribute_Form_ContributionPage_Settings') {
+    // This form is called once as part of the regular page load and again via an ajax snippet.
+    // We only want the new fields loaded once - so limit ourselves to the ajax snippet load.
+    if (CRM_Utils_Request::retrieve('snippet', 'String', $this) == 'json') {
+      $id = intval($form->getVar('_id'));
+      $code = remoteform_get_displayable_code($id, 'ContributionPage');
+      remoteform_add_enable_field($form, 'contribution_page', E::ts('Allow remote submissions to this contribution page.'), $code);
     }
-    $profile_id = intval($form->getVar('_id'));
-    $defaults['remoteform_profile_enable'] = 0;
-    if (in_array($profile_id, $enabled_profiles)) {
-      $defaults['remoteform_profile_enable'] = 1;
-    }
-    $form->setDefaults($defaults);
+  }
+  else if ($formName == 'CRM_UF_Form_Group') {
+    $id = intval($form->getVar('_id'));
+    $code = remoteform_get_displayable_code($id, 'Profile');
+    remoteform_add_enable_field($form, 'profile', E::ts('Allow remote submissions to this profile.'), $code);
+  }
+}
 
+
+/**
+ * Save remoteform enabled settings.
+ *
+ */
+function remoteform_save_enabled_settings($form, $name) {
+  $vals = $form->_submitValues;
+  $id = intval($form->getVar('_id'));
+  $enable = array_key_exists('remoteform_' . $name . '_enable', $vals) ? TRUE : FALSE;
+
+  // Handle Default setting.
+  $enabled = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_' . $name));
+  if (is_null($enabled)) {
+    $enabled = array();
+  }
+  if ($enable) {
+    if (!in_array($id, $enabled)) {
+      // Update
+      $enabled[] = $id;
+      civicrm_api3('Setting', 'create', array('remoteform_enabled_' . $name => $enabled));
+    }
+  }
+  else {
+    if (in_array($id, $enabled)) {
+      $key = array_search($id, $enabled);
+      unset($enabled[$key]);
+      civicrm_api3('Setting', 'create', array('remoteform_enabled_' . $name => $enabled));
+    }
   }
 }
 
@@ -221,28 +279,11 @@ function remoteform_civicrm_buildForm($formName, &$form) {
  */
 function remoteform_civicrm_postProcess($formName, &$form) {
   if ($formName == 'CRM_UF_Form_Group') {
-    $vals = $form->_submitValues;
-    $profile_id = intval($form->getVar('_id'));
-    $remoteform_profile_enable = array_key_exists('remoteform_profile_enable', $vals) ? TRUE : FALSE;
+    remoteform_save_enabled_settings($form, 'profile');
 
-    // Handle Default setting.
-    $enabled_profiles = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profiles'));
-    if (is_null($enabled_profiles)) {
-      $enabled_profiles = array();
-    }
-    if ($remoteform_profile_enable) {
-      if (!in_array($profile_id, $enabled_profiles)) {
-        // Update
-        $enabled_profiles[] = $profile_id;
-        civicrm_api3('Setting', 'create', array('remoteform_enabled_profiles' => $enabled_profiles));
-      }
-    }
-    else {
-      if (in_array($profile_id, $enabled_profiles)) {
-        $key = array_search($profile_id, $enabled_profiles);
-        unset($enabled_profiles[$key]);
-        civicrm_api3('Setting', 'create', array('remoteform_enabled_profiles' => $enabled_profiles));
-      }
-    }
+  }
+  elseif ($formName == 'CRM_Contribute_Form_ContributionPage_Settings') {
+    remoteform_save_enabled_settings($form, 'contribution_page');
+
   }
 }
