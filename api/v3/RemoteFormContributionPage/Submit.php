@@ -15,13 +15,46 @@ function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apir
     _rf_add_page_details($contribution_page_id, $params);
     _rf_add_profile_fields($contribution_page_id, $params);
     _rf_add_price_fields($contribution_page_id, $params, $params['control']['is_allow_other_amount'], $params['control']['currency']);
-    _rf_add_credit_card_fields($params);     
+    // Omit credit card fields for Stripe (and any other javascript based payment processor).
+    if (!_rf_uses_js_based_payment_processor($contribution_page_id)) {
+      _rf_add_credit_card_fields($params);     
+    }
   }
   $params['contribution_page_id']['api.required'] = TRUE;
   $params['contribution_page_id']['title'] = 'Contribution Page ID';
 }
 
-function _rf_add_page_details($id, &$params) {
+/**
+ * Check if contribution page uses js based payment processor.
+ *
+ * If the contribution page uses a javascript based payment processor, in
+ * other words, one that submits the credit card directly to the payment
+ * processor via their own javascript, then we don't want to send our own
+ * credit card fields.
+ */
+function _rf_uses_js_based_payment_processor($id) {
+  $result = _rf_get_contribution_page_details($id);
+  $ppid = $result[$id]['payment_processor'];
+
+  $js_based_payment_processors = array('Stripe');
+  $sql = "SELECT ppt.name FROM civicrm_payment_processor_type ppt JOIN
+    civicrm_payment_processor pp ON pp.payment_processor_type_id = ppt.id
+    WHERE pp.id = %0";
+  $dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($ppid, 'Integer')));
+  $dao->fetch();
+  if (in_array($dao->name, $js_based_payment_processors)) {
+    return TRUE;
+  }
+  return FALSE;
+
+}
+
+/**
+ * Get contribution page details.
+ *
+ * Return details about the contribution page.
+ */
+function _rf_get_contribution_page_details($id) {
   $return = array(
       'title',
       'intro_text',
@@ -32,28 +65,35 @@ function _rf_add_page_details($id, &$params) {
       'min_amount',
       'is_allow_other_amount',
       'payment_processor'
-    );
+   );
   $cp_params = array(
     'id' => $id,
     'return' => $return,
   );
   $result = civicrm_api3('ContributionPage', 'get', $cp_params);
+  return $result['values'];
+
+}
+
+function _rf_add_page_details($id, &$params) {
+  $values = _rf_get_contribution_page_details($id);
+
   // We send three kinds of information out:
   // 1. Fields that should be rendered for input
   // 2. Fields that should be rendered read-only
   // 3. Control information.
   $params['readonly'] = array(
-   'title' => $result['values'][$id]['title'],
-   'intro_text' => $result['values'][$id]['intro_text'],
-   'thankyou_text' => $result['values'][$id]['thankyou_text'],
+   'title' => $values[$id]['title'],
+   'intro_text' => $values[$id]['intro_text'],
+   'thankyou_text' => $values[$id]['thankyou_text'],
   );
   $params['control'] = array(
-   'is_active' => $result['values'][$id]['is_active'],
-   'start_date' => $result['values'][$id]['start_date'],
-   'currency' => $result['values'][$id]['currency'],
-   'min_amount' => $result['values'][$id]['min_amount'],
-   'is_allow_other_amount' => $result['values'][$id]['is_allow_other_amount'],
-   'payment_processor' =>  $result['values'][$id]['payment_processor'],
+   'is_active' => $values[$id]['is_active'],
+   'start_date' => $values[$id]['start_date'],
+   'currency' => $values[$id]['currency'],
+   'min_amount' => $values[$id]['min_amount'],
+   'is_allow_other_amount' => $values[$id]['is_allow_other_amount'],
+   'payment_processor' =>  $values[$id]['payment_processor'],
   );
 }
 
@@ -62,7 +102,7 @@ function _rf_add_profile_fields($id, &$params) {
   $result = civicrm_api3('UFJoin', 'get', array(
     'module' => 'CiviContribute',
     'entity_table' => 'civicrm_contribution_page',
-    'entity_id' => $contribution_page_id,
+    'entity_id' => $id,
     'return' => array('uf_group_id')
   ));
   foreach($result['values'] as $value) {
@@ -90,7 +130,7 @@ function _rf_add_price_fields($id, &$params, $allow_other = 0, $currency = 'USD'
   $default_value = NULL;
   $i = 0;
   while($dao->fetch()) {
-    if ($dao->name == 'Other_Amount' && $allow_other != 1) {
+    if (empty($dao->label)) {
       continue;
     }
     $options[$dao->id] = array(

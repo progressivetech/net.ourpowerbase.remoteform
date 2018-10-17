@@ -174,6 +174,13 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
   $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
 
+  if ($entity == 'ContributionPage') {
+    $init_txt = 'Make a contribution';
+  }
+  else {
+    $init_txt = 'Join our mailing list';
+  }
+
   return 
       htmlentities('<div id="remoteForm"></div>') . '<br />' .
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
@@ -181,6 +188,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
       htmlentities(' url: "' . $post_url . '",') . '<br>' .
       htmlentities(' id: ' . $id . ',') . '<br/>' .
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
+      htmlentities(' initTxt: "' . $init_txt . '",') . '<br/>' .
       htmlentities(' autoInit: false,') . '<br />' .
       htmlentities(' displayLabels: false') .  '<br />' .
       htmlentities('};') . '<br />' .

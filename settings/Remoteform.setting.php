@@ -13,7 +13,7 @@ return array(
     'quick_form_type' => 'Element',
     'html_type' => 'textarea',
     'html_attributes' => array('rows' => 5, 'cols' => 50),
-    'default' => array(),
+    'default' => '',
     'add' => '5.3',
     'is_domain' => 1,
     'is_contact' => 0,

@@ -13,6 +13,8 @@ class CRM_Remoteform_Form_RemoteformSettings extends CRM_Core_Form {
 	private $_submittedValues = array();
 
   function buildQuickForm() {
+    CRM_Utils_System::setTitle(E::ts("Remote Form Settings"));
+
     $settings = $this->getFormSettings();
     foreach ($settings as $name => $setting) {
       if (isset($setting['quick_form_type'])) {
@@ -98,6 +100,9 @@ class CRM_Remoteform_Form_RemoteformSettings extends CRM_Core_Form {
     $settings = $this->getFormSettings();
     $values = array_intersect_key($this->_submittedValues, $settings);
     civicrm_api3('setting', 'create', $values);
+    $session = CRM_Core_Session::singleton();
+    $session->setStatus(E::ts("Settings were saved."), E::ts("Remote Form"), "success");
+
   }
   /**
    * Set defaults for form.

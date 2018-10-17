@@ -51,6 +51,15 @@ function remoteForm(config) {
   // from the field definitions.
   cfg.createFieldDivFunc = config.createFieldDivFunc || createFieldDiv;
 
+  // Stripe related options.
+  // Stripe public api key (stripe payment processor only)
+  cfg.stripeApiKey = config.stripeApiKey || null;
+  cfg.stripeCheckoutLogoUrl = config.stripeCheckoutLogoUrl || 'https://stripe.com/img/documentation/checkout/marketplace.png';
+  cfg.stripeCheckoutName = config.stripeCheckoutName || 'Please support us';
+  cfg.stripeCheckoutDescription = config.stripeCheckoutDescription || 'Donation';
+  cfg.stripeRequireZipCode = config.stripeRequireZipCode || true;
+
+
   // Custom css - indicate classes that should be used on various parts
   // of the form.
   if (!config.css) {
@@ -204,6 +213,16 @@ function remoteForm(config) {
   }
 
   function submitData(fields) {
+    var params = processSubmittedData(fields);
+    if (cfg.stripeApiKey) {
+      initStripe(params);
+    }
+    else {
+      post(cfg.url, params, processSubmitDataResponse);
+    }
+  }
+
+  function processSubmittedData(fields) {
     var params;
     if (cfg.entity == 'Profile') {
       params = {
@@ -311,7 +330,7 @@ function remoteForm(config) {
     if (payment_processor) {
       params['params']['payment_processor_id'] = payment_processor;
     }
-    post(cfg.url, params, processSubmitDataResponse);
+    return params;
   }
 
   function processSubmitDataResponse(data) {
@@ -550,6 +569,29 @@ function remoteForm(config) {
   }
 
   /**
+   * Check if this is an "other amount" price set
+   *
+   * Some price set options should only be displayed if the user has
+   * clicked the "other amount" option. Unfortunately, it's hard to
+   * tell if an option is an other amount option. With normal price sets
+   * the option has the name "Other_amount" - however, if you have a 
+   * contribution page and you are not using price sets, then it's called
+   * Contribution_Amount.
+   *
+   * This function return true if we think this is an other amount
+   * option or false otherwise.
+   */
+  function isOtherAmountOption(option) {
+    if (option["name"] == 'Other_amount') {
+      return true;
+    }
+    else if(option["name"] == 'Contribution_Amount') {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Checkbox and Radio collections.
    */
   function createCheckboxesOrRadios(key, def, type) {
@@ -567,7 +609,13 @@ function remoteForm(config) {
     var optionsDiv = document.createElement('div');
 
     var isPriceSet = false;
-    var hasOtherAmountOption = false;
+
+    // Keep track of whether or not this price set has an "other amount"
+    // option. If so, we have to display it when requested and hide it when
+    // not requested. This variable keeps track of whether one exists for
+    // this particular priceset.
+    var pricesetHasOtherAmountOption = false;
+
     // Treat price sets differently.
     if (/price_[0-9]+/.test(key)) {
       isPriceSet = true;
@@ -575,18 +623,19 @@ function remoteForm(config) {
       // If there is an other_amount option, we need to know up front so
       // we can add event listeners that will make a new other amount
       // text box appear.
-      for (var option in def.options) {
-        if (def.options.hasOwnProperty(option)) {
-          if (def.options.name == 'Other_amount') {
-            hasOtherAmountOption = true;
+      for (var optionId in def.options) {
+        if (def.options.hasOwnProperty(optionId)) {
+          if (isOtherAmountOption(def.options[optionId])) {
+            pricesetHasOtherAmountOption = true;
+            break;
           }
         }
       }
     }
 
     // Now iterate over options again to build out the html.
-    for (var option in def.options) {
-      if (def.options.hasOwnProperty(option)) {
+    for (var optionId in def.options) {
+      if (def.options.hasOwnProperty(optionId)) {
         // Another div to enclose this particular option.
         var optionDiv = document.createElement('div');
 
@@ -599,7 +648,7 @@ function remoteForm(config) {
 
         // We set an id so the label below can properly reference the right
         // input.
-        optionInput.id = def.name + '-' + option;
+        optionInput.id = def.name + '-' + optionId;
         optionInput.className = cfg.css.checkInput;
 
         // We use the name field to find the values when we submit. This 
@@ -610,7 +659,7 @@ function remoteForm(config) {
         var optionDisplay = null; 
         if (isPriceSet) {
           // Priceset options are a dict of values.
-          var optionObj = def.options[option];
+          var optionObj = def.options[optionId];
           var prefix;
           if (optionObj['currency'] == 'USD') {
             prefix = '$';
@@ -618,7 +667,8 @@ function remoteForm(config) {
 
           // Price set options called "Other_Amount" are handled differently.
           var optionDisplay;
-          if (optionObj['name'] == 'Other_Amount') {
+
+          if (isOtherAmountOption(optionObj)) {
             // Don't display "amount" (because with other_amount it is 
             // set to is the minimum amount).
             optionDisplay = optionObj['label'];
@@ -645,12 +695,16 @@ function remoteForm(config) {
           else {
             optionDisplay = optionObj['label'] + ' (' + prefix + parseFloat(optionObj['amount']).toFixed(2) + ')';
             optionInput.setAttribute('data-amount', optionObj['amount']);
-            if (hasOtherAmountOption) {
+            if (pricesetHasOtherAmountOption) {
               // This is not an other amount field, but since there is 
               // an other amount option, we have to hide the other amount
               // text field if it is clicked on.
               optionInput.addEventListener('click', function(e) {
-                document.getElementById('Other_Amount').style.display = 'none';
+                // If we have not clicked the other amount option, then the other amount
+                // field may not even exist.
+                if (document.getElementById('Other_Amount')) {
+                  document.getElementById('Other_Amount').style.display = 'none';
+                }
               });
             }
           }
@@ -659,7 +713,7 @@ function remoteForm(config) {
           optionDisplay = def.options[option];
         }
 
-        optionInput.value = option;
+        optionInput.value = optionId;
         
         // Create the label.
         var optionLabel = document.createElement('label');
@@ -739,41 +793,36 @@ function remoteForm(config) {
   /**
    * Stripe related functions.
    */
-  function sendToken(token) {
-    // You can access the token ID with `token.id`.
-    // Get the token ID to your server-side code for use.
-    // NOTE: requires CORS enabled destination.
-    
-    var params = "token_id=" + encodeURIComponent(token.id);
-    params += "&token_email=" + encodeURIComponent(token.email);
-    
-    for (var i=0; i < remoteFormParams.fields.length; i++) {
-      params += '&' + remoteFormParams.fields[i].id + '=' +
-        document.getElementById(remoteFormParams.fields[i].id).value;
-    }
-    
-    post(url, params);
-  }
-
-  function initStripe() {
+  function initStripe(params) {
     var handler = StripeCheckout.configure({
-      key: remoteFormParams.apiKey ,
-      image: 'https://stripe.com/img/documentation/checkout/marketplace.png',
+      key: cfg.stripeApiKey,
+      image: cfg.stripeCheckoutLogoUrl,
       locale: 'auto',
       token: function(token) {
-        sendToken(token);   
+        params['params']['stripe_token'] = token.id;
+        console.log(params);
+        post(cfg.url, params, processSubmitDataResponse);
       }
     });
 
-    document.getElementById('remoteFormButton').addEventListener('click', function(e) {
-      // Open Checkout with further options:
-      handler.open({
-        name: 'PowerBase',
-        description: 'Donation',
-        zipCode: false,
-        amount: document.getElementById('remoteFormAmount').value * 100
-      });
-      e.preventDefault();
+    // Look for a field that looks like an email field so we don't make
+    // the user fill in their email address twice.
+    var email = null;
+    for (var field_name in params['params']) {
+      console.log("Checking", field_name);
+      if (field_name.search('email') != -1) {
+        email = params['params'][field_name];
+        break;
+      }
+    }
+
+    // Open Checkout with further options:
+    handler.open({
+      name: cfg.stripeCheckoutName,
+      description: cfg.stripeCheckoutDescription,
+      zipCode: cfg.stripeRequireZipCode,
+      email: email,
+      amount: params['params']['amount'] * 100
     });
 
     // Close Checkout on page navigation:
