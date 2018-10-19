@@ -47,6 +47,11 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     $form = new CRM_Contribute_Form_Contribution_Confirm();
     $form->_id = $params['id'];
 
+    // Added by remoteform:
+    if (isset($params['is_test']) && $paras['is_set'] === TRUE) {
+      $form->_mode = 'test';
+    }
+
     CRM_Contribute_BAO_ContributionPage::setValues($form->_id, $form->_values);
     $form->_separateMembershipPayment = CRM_Contribute_BAO_ContributionPage::getIsMembershipPayment($form->_id);
     //this way the mocked up controller ignores the session stuff
@@ -105,6 +110,7 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
       }
     }
     $form->set('memberPriceFieldIDS', $membershipPriceFieldIDs);
+    // Added by remoteform:
     return $form->processFormSubmission(CRM_Utils_Array::value('contact_id', $params));
   }
 }

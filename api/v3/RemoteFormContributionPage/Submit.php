@@ -39,9 +39,7 @@ function _rf_include_credit_card_fields($id) {
   $type = strtolower(remoteform_get_payment_processor_type($id));
 
   $func = 'remoteform' . $type . '_include_cc_fields_in_form';
-  CRM_Core_Error::debug_log_message("Trying: $func");
   if (function_exists($func)) {
-    CRM_Core_Error::debug_log_message("found: $func");
     return $func();
   }
   return TRUE;

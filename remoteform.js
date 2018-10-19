@@ -41,6 +41,11 @@ function remoteForm(config) {
   // order to display the form. Default: true.
   cfg.autoInit = config.autoInit == false ? false : true;
 
+  // Property: cfg.contributionIsTest
+  // For contributions only, indicats whether you should submit to the
+  // test payment processor or the live payment processor. Default: false
+  cfg.contributionIsTest = config.contributionIsTest || false;
+
   // Property: cfg.initTxt
   // If cfg.autoInit is false, the text displayed on the button to click
   // for the user to display the form. Default: Join our mailing list.
@@ -210,6 +215,9 @@ function remoteForm(config) {
     // Clear any left over user messages.
     clearUserMsg();
 
+    if (cfg.contributionIsTest) {
+      userMsg("In testing mode.");
+    }
     var params;
     var submitEntity = cfg.entity;
 
