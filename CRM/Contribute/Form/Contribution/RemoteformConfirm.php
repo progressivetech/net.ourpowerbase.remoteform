@@ -48,7 +48,7 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     $form->_id = $params['id'];
 
     // Added by remoteform:
-    if (isset($params['is_test']) && $paras['is_set'] === TRUE) {
+    if (isset($params['test_mode']) && $params['test_mode'] == 1) {
       $form->_mode = 'test';
     }
 

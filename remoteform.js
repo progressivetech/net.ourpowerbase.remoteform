@@ -44,7 +44,7 @@ function remoteForm(config) {
   // Property: cfg.contributionIsTest
   // For contributions only, indicats whether you should submit to the
   // test payment processor or the live payment processor. Default: false
-  cfg.contributionIsTest = config.contributionIsTest || false;
+  cfg.paymentTestMode = config.paymentTestMode || false;
 
   // Property: cfg.initTxt
   // If cfg.autoInit is false, the text displayed on the button to click
@@ -215,7 +215,7 @@ function remoteForm(config) {
     // Clear any left over user messages.
     clearUserMsg();
 
-    if (cfg.contributionIsTest) {
+    if (cfg.paymentTestMode) {
       userMsg("In testing mode.");
     }
     var params;
@@ -332,6 +332,11 @@ function remoteForm(config) {
       // we process the price set fields below.
       var amount = 0.00;
       var payment_processor = fields.control.payment_processor;
+
+      // Check to see if it's a test
+      if (cfg.paymentTestMode) {
+        params["params"]["test_mode"] = true;
+      }
     }
     for (var key in fields) {
       if (fields.hasOwnProperty(key)) {
