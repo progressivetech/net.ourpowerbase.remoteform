@@ -174,6 +174,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $query = NULL;
   $absolute = TRUE;
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
+  $css_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.css');
   $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
 
   $extra_js_urls = NULL;
@@ -193,6 +194,10 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   }
 
   return 
+      htmlentities('// The stylesheet link is optional and can be removed ') . '<br />' .
+      htmlentities('// if you want to style the form yourself, or if you ') . '<br />' .
+      htmlentities('// already are including a bootstrap css environment.') . '<br />'.
+      htmlentities('<link rel="stylesheet" property="stylesheet" href="' . $css_url . '">') . '<br />' .
       htmlentities('<div id="remoteForm"></div>') . '<br />' .
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
         $extra_js_urls .
