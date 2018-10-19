@@ -574,7 +574,7 @@ function remoteForm(config) {
    * Some price set options should only be displayed if the user has
    * clicked the "other amount" option. Unfortunately, it's hard to
    * tell if an option is an other amount option. With normal price sets
-   * the option has the name "Other_amount" - however, if you have a 
+   * the option has the name "Other_Amount" - however, if you have a
    * contribution page and you are not using price sets, then it's called
    * Contribution_Amount.
    *
@@ -582,7 +582,7 @@ function remoteForm(config) {
    * option or false otherwise.
    */
   function isOtherAmountOption(option) {
-    if (option["name"] == 'Other_amount') {
+    if (option["name"] == 'Other_Amount') {
       return true;
     }
     else if(option["name"] == 'Contribution_Amount') {

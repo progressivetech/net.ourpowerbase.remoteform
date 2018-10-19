@@ -14,7 +14,7 @@ function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apir
     $contribution_page_id = $apirequest['params']['contribution_page_id'];
     _rf_add_page_details($contribution_page_id, $params);
     _rf_add_profile_fields($contribution_page_id, $params);
-    _rf_add_price_fields($contribution_page_id, $params, $params['control']['is_allow_other_amount'], $params['control']['currency']);
+    _rf_add_price_fields($contribution_page_id, $params, $params['control']['currency']);
     // Omit credit card fields for Stripe (and any other javascript based payment processor).
     if (!_rf_uses_js_based_payment_processor($contribution_page_id)) {
       _rf_add_credit_card_fields($params);     
@@ -63,7 +63,6 @@ function _rf_get_contribution_page_details($id) {
       'start_date',
       'currency',
       'min_amount',
-      'is_allow_other_amount',
       'payment_processor'
    );
   $cp_params = array(
@@ -92,7 +91,6 @@ function _rf_add_page_details($id, &$params) {
    'start_date' => $values[$id]['start_date'],
    'currency' => $values[$id]['currency'],
    'min_amount' => $values[$id]['min_amount'],
-   'is_allow_other_amount' => $values[$id]['is_allow_other_amount'],
    'payment_processor' =>  $values[$id]['payment_processor'],
   );
 }
@@ -118,21 +116,20 @@ function _rf_add_profile_fields($id, &$params) {
   }
 }
 
-function _rf_add_price_fields($id, &$params, $allow_other = 0, $currency = 'USD') {
+function _rf_add_price_fields($id, &$params, $currency = 'USD') {
   $sql = "SELECT fv.id, fv.name, fv.label, fv.help_pre, fv.help_post, fv.amount, 
-   fv.is_default, pse.price_set_id, pf.id AS price_field_id FROM 
-   civicrm_price_field_value fv JOIN civicrm_price_field pf ON fv.price_field_id =
-   pf.id JOIN civicrm_price_set_entity pse ON pse.price_set_id =
-   pf.price_set_id WHERE pse.entity_table = 'civicrm_contribution_page' AND
-   pse.entity_id = %0";
+   fv.is_default, pse.price_set_id, pf.id AS price_field_id
+   FROM civicrm_price_field_value fv
+     JOIN civicrm_price_field pf ON fv.price_field_id = pf.id
+     JOIN civicrm_price_set ps ON ps.id = pf.price_set_id
+     JOIN civicrm_price_set_entity pse ON pse.price_set_id = pf.price_set_id
+   WHERE pse.entity_table = 'civicrm_contribution_page' AND pse.entity_id = %0
+     AND fv.is_active = 1 AND pf.is_active = 1 AND ps.is_active = 1";
   $dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($id, 'Integer')));
   $options = array();
   $default_value = NULL;
   $i = 0;
   while($dao->fetch()) {
-    if (empty($dao->label)) {
-      continue;
-    }
     $options[$dao->id] = array(
       'amount' => $dao->amount,
       'label' => $dao->label,
