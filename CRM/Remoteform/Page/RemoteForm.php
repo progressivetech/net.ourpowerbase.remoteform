@@ -74,6 +74,8 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     }
 
     $entity = $input->entity;
+    $input_params = get_object_vars($input->params);
+    $action = $input->action;
     if ($entity == 'Profile') {
       // Ensure this site allows access to profiles.
       if (!CRM_Core_Permission::check('profile create')) {
@@ -88,13 +90,12 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         throw new CiviCRM_API3_Exception("This profile is not configured to accept remote form submissions.");
       }
 
-      $action = $input->action;
       if ($action == 'getfields') {
         // Sanitize input parameters.
         $api_action = $input_params['api_action'] == 'submit' ? 'submit' : NULL;
         $get_options = $input_params['get_options'] == 'all' ? 'all' : NULL;
         $params = array(
-          'profile_id' => $profile_id,
+          'profile_id' => $id,
           'api_action' => $api_action,
           'get_options' => $get_options 
         );
@@ -120,8 +121,6 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       if (!CRM_Core_Permission::check('make online contributions')) {
         throw new CiviCRM_API3_Exception("You don't have permission to create contributions.");
       }
-      $action = $input->action;
-      $input_params = get_object_vars($input->params);
 
       // Make sure this contribution page is configured to accept remote submissions.
       $id = intval($input_params['contribution_page_id']);
