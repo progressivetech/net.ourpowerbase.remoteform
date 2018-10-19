@@ -1,5 +1,6 @@
 /**
- * Stripe related functions.
+ * Stripe related functions. Use this file as a model if you are extending
+ * remoteform to work with another token-based payment processor.
  */
 
 /** 

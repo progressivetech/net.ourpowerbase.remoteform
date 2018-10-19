@@ -1,6 +1,8 @@
 <?php
 
 require_once 'remoteform.civix.php';
+require_once 'remoteform.stripe.php';
+
 use CRM_Remoteform_ExtensionUtil as E;
 
 /**
@@ -174,24 +176,31 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
   $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
 
-  $extra_js_url = NULL;
+  $extra_js_urls = NULL;
   $extra_js_params = NULL;
   if ($entity == 'ContributionPage') {
-    // Check to see if this is a stripe payment processor.
-    //$stripe_keys = remoteform_get_stripe_keys($id);
-    //if ($stripe_keys) {
-     // $extra_js_url = htmlentities('<script src="https://checkout.stripe.com/checkout.js"></script>') . '<br />';
-      //$extra_js_params = htmlentities('stripeApiKey: "' . remoteform_contribution_page_stripe_api_
+    $type = strtolower(remoteform_get_payment_processor_type($id));
+
+    $extra_js_urls_func = 'remoteform' . $type . '_extra_js_urls';
+    $extra_js_params_func = 'remoteform' . $type . '_extra_js_params';
+
+    if (function_exists($extra_js_urls_func)) {
+      $extra_js_urls = $extra_js_urls_func($id);
+    }
+    if (function_exists($extra_js_params_func)) {
+      $extra_js_params = $extra_js_params_func($id);
+    }
   }
 
   return 
       htmlentities('<div id="remoteForm"></div>') . '<br />' .
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
-        $extra_js_url .
+        $extra_js_urls .
       htmlentities('<script> var config = { ') . '<br />' .
       htmlentities(' url: "' . $post_url . '",') . '<br>' .
       htmlentities(' id: ' . $id . ',') . '<br/>' .
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
+        $extra_js_params .
       htmlentities('};') . '<br />' .
       htmlentities('remoteForm(config);') . '<br />' .
       htmlentities('</script>');
@@ -295,4 +304,48 @@ function remoteform_civicrm_postProcess($formName, &$form) {
     remoteform_save_enabled_settings($form, 'contribution_page');
 
   }
+}
+
+/**
+ * Get name of payment processor type for contribution id.
+ *
+ */
+function remoteform_get_payment_processor_type($id) {
+  $details = remoteform_get_contribution_page_details($id);
+  $payment_processor_id = $details['payment_processor'];
+
+  $sql = "SELECT ppt.name FROM civicrm_payment_processor_type ppt JOIN
+    civicrm_payment_processor pp ON pp.payment_processor_type_id = ppt.id
+    WHERE pp.id = %0";
+  $dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($payment_processor_id, 'Integer')));
+  $dao->fetch();
+  if (isset($dao->name)) {
+    return $dao->name;
+  }
+  return NULL;
+}
+
+/**
+ * Get contribution page details.
+ *
+ * Return details about the contribution page.
+ */
+function remoteform_get_contribution_page_details($id) {
+  $return = array(
+      'title',
+      'intro_text',
+      'thankyou_text',
+      'is_active',
+      'start_date',
+      'currency',
+      'min_amount',
+      'payment_processor'
+   );
+  $cp_params = array(
+    'id' => $id,
+    'return' => $return,
+  );
+  $result = civicrm_api3('ContributionPage', 'get', $cp_params);
+  return $result['values'][$id];
+
 }

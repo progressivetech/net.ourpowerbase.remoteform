@@ -16,7 +16,7 @@ function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apir
     _rf_add_profile_fields($contribution_page_id, $params);
     _rf_add_price_fields($contribution_page_id, $params, $params['control']['currency']);
     // Omit credit card fields for Stripe (and any other javascript based payment processor).
-    if (!_rf_uses_js_based_payment_processor($contribution_page_id)) {
+    if (_rf_include_credit_card_fields($contribution_page_id)) {
       _rf_add_credit_card_fields($params);     
     }
   }
@@ -25,73 +25,46 @@ function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apir
 }
 
 /**
- * Check if contribution page uses js based payment processor.
+ * Check if we should include the cc fields in our form. 
  *
  * If the contribution page uses a javascript based payment processor, in
  * other words, one that submits the credit card directly to the payment
- * processor via their own javascript, then we don't want to send our own
- * credit card fields.
+ * processor via their own javascript, then we may not want to send our own
+ * credit card fields. If you want remoteform to work with such a payment
+ * processor, just create an extension which defines the function:
+ * remoteformNAME_include_cc_fields_in_form() and have the function
+ * return FALSE. Replace NAME with the type of payment processor.
  */
-function _rf_uses_js_based_payment_processor($id) {
-  $result = _rf_get_contribution_page_details($id);
-  $ppid = $result[$id]['payment_processor'];
+function _rf_include_credit_card_fields($id) {
+  $type = strtolower(remoteform_get_payment_processor_type($id));
 
-  $js_based_payment_processors = array('Stripe');
-  $sql = "SELECT ppt.name FROM civicrm_payment_processor_type ppt JOIN
-    civicrm_payment_processor pp ON pp.payment_processor_type_id = ppt.id
-    WHERE pp.id = %0";
-  $dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($ppid, 'Integer')));
-  $dao->fetch();
-  if (in_array($dao->name, $js_based_payment_processors)) {
-    return TRUE;
+  $func = 'remoteform' . $type . '_include_cc_fields_in_form';
+  CRM_Core_Error::debug_log_message("Trying: $func");
+  if (function_exists($func)) {
+    CRM_Core_Error::debug_log_message("found: $func");
+    return $func();
   }
-  return FALSE;
-
-}
-
-/**
- * Get contribution page details.
- *
- * Return details about the contribution page.
- */
-function _rf_get_contribution_page_details($id) {
-  $return = array(
-      'title',
-      'intro_text',
-      'thankyou_text',
-      'is_active',
-      'start_date',
-      'currency',
-      'min_amount',
-      'payment_processor'
-   );
-  $cp_params = array(
-    'id' => $id,
-    'return' => $return,
-  );
-  $result = civicrm_api3('ContributionPage', 'get', $cp_params);
-  return $result['values'];
-
+  return TRUE;
 }
 
 function _rf_add_page_details($id, &$params) {
-  $values = _rf_get_contribution_page_details($id);
+  $values = remoteform_get_contribution_page_details($id);
 
   // We send three kinds of information out:
   // 1. Fields that should be rendered for input
   // 2. Fields that should be rendered read-only
   // 3. Control information.
   $params['readonly'] = array(
-   'title' => $values[$id]['title'],
-   'intro_text' => $values[$id]['intro_text'],
-   'thankyou_text' => $values[$id]['thankyou_text'],
+   'title' => $values['title'],
+   'intro_text' => $values['intro_text'],
+   'thankyou_text' => $values['thankyou_text'],
   );
   $params['control'] = array(
-   'is_active' => $values[$id]['is_active'],
-   'start_date' => $values[$id]['start_date'],
-   'currency' => $values[$id]['currency'],
-   'min_amount' => $values[$id]['min_amount'],
-   'payment_processor' =>  $values[$id]['payment_processor'],
+   'is_active' => $values['is_active'],
+   'start_date' => $values['start_date'],
+   'currency' => $values['currency'],
+   'min_amount' => $values['min_amount'],
+   'payment_processor' =>  $values['payment_processor'],
   );
 }
 
