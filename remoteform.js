@@ -1,88 +1,149 @@
+/**
+ * Functon: remoteForm
+ *
+ * Draws a form based on the configuration provided and properly
+ * submits the results back to CiviCRM.
+ */
 function remoteForm(config) {
 
-  /**
-   * Handle configuration.
+  /** 
+   * Property: cfg 
    *
-   * cfg is a global configuration object and config is the object passed
-   * in by the user.
+   * cfg is a sanitized global configuration object based on config, which
+   * is the object passed in by the user.
    */
-
   var cfg = {};
-  // Required parameters.
+
+  // Property: cfg.url
+  // The url of the CiviCRM installation we are posting to. Required.
   cfg.url = config.url || null;
+
+  // Property: cfg.id
+  // The id of the entity (profile id, contribution page id, etc.). Required.
   cfg.id = config.id|| null;
   if (!cfg.url || !cfg.id) {
     friendlyErr("Please include url and id in your configuration."); 
     return false;
   }
 
-  // Default values for optional configuration.
+  // Property: cfgt.parentElementId
+  // The id of the element to which the form will be appended. Default: remoteform.
+  cfg.parentElementId = config.parentID || 'remoteForm';
 
-  // The id of the element to which the form will be appended.
-  cfg.parentId = config.parentID || 'remoteForm';
-
-  // The CiviCRM entity we are creating (currently only Profile is supported).
+  // Property: cfg.entity
+  // The CiviCRM entity we are creating (currently only Profile is supported). 
+  // Default: Profile.
   cfg.entity = config.entity || 'Profile';
 
+  // Property: cfg.autoInit
   // How the form will be initialized - either true if the form will be
   // initialized on page load or false if a button will need to be clicked in
-  // order to display the form.
+  // order to display the form. Default: true.
   cfg.autoInit = config.autoInit == false ? false : true;
 
-  // If autoInit is false, the text display on the button to click
-  // for the user to display the form.
+  // Property: cfg.initTxt
+  // If cfg.autoInit is false, the text displayed on the button to click
+  // for the user to display the form. Default: Join our mailing list.
   cfg.initTxt = config.initTxt || 'Join our mailing list';
 
-  // The text to display on the form's submit button.
+  // Property: cfg.submitTxt
+  // The text to display on the form's submit button. Default: Join.
   cfg.submitTxt = config.submitTxt || 'Join';
 
-  // The text to display on the form's cancel button.
+  // Property: cfg.cancelTxt
+  // The text to display on the form's cancel button. Default: Cancel.
   cfg.cancelTxt = config.cancelTxt || 'Cancel';
 
+  // Property: cfg.SuccessMsg
   // The message displayed to the user upon successful submission of the
-  // form.
+  // form. Default: Thank you! Your submission was received.
   cfg.successMsg = config.successMsg || 'Thank you! Your submission was received.';
 
+  // Property: cfg.displayLabels
   // Whether or not the form labels should be displayed when placeholder
-  // text could be used instead to save space.
+  // text could be used instead to save space. Default: false.
   cfg.displayLabels = config.displayLabels == true ? true : false;
 
+  // Property: cfg.createFieldDivFunc
   // Custom function to override the function used to create html fields
   // from the field definitions.
+  // See Also:
+  //   createFieldDiv
   cfg.createFieldDivFunc = config.createFieldDivFunc || createFieldDiv;
 
-  // Stripe related options.
-  // Stripe public api key (stripe payment processor only)
-  cfg.stripeApiKey = config.stripeApiKey || null;
-  cfg.stripeCheckoutLogoUrl = config.stripeCheckoutLogoUrl || 'https://stripe.com/img/documentation/checkout/marketplace.png';
-  cfg.stripeCheckoutName = config.stripeCheckoutName || 'Please support us';
-  cfg.stripeCheckoutDescription = config.stripeCheckoutDescription || 'Donation';
-  cfg.stripeRequireZipCode = config.stripeRequireZipCode || true;
+  // Property: cfg.customSubmitDataFunc
+  // Customize the post action if you want to use a token-based payment processor.
+  // If you define this function, it should accept the following arguments.
+  // Parameters:
+  //  params - the fields submitted by the user, including the amount
+  //           field 
+  //  submitDataPost - after your function has done it's business, you 
+  //                   should submit to this function to complete the process.
+  //  customSubmitDataParams - any custom parameters passed by the user
+  cfg.customSubmitDataFunc = config.customSubmitDataFunc || null;
 
+  // Property: cfg.customSubmitDataParams
+  // An object containing any data that is specific to your customSubmitDataFun
+  cfg.customSubmitDataParams = config.customSubmitDataParams || {};
 
-  // Custom css - indicate classes that should be used on various parts
-  // of the form.
   if (!config.css) {
     config.css = {};
   }
+
+  // Property: cfg.css
+  // Indicate classes that should be used on various parts of the form if you
+  // want more control over look and feel. The defaults are designed to work
+  // with bootstrap. If you are not using bootstrap, you may want to include
+  // the remoteform.css file which tries to make things look nice with the
+  // default classes.
   cfg.css = config.css || {};
+
+
+  // Property: cfg.css.SuccessMsg
+  // Default: alert alert-success
   cfg.css.userSuccessMsg = config.css.userSuccessMsg || 'alert alert-success';
+  // Property: cfg.css.FailureMsg
+  // Default: alert alert-warning
   cfg.css.userFailureMsg = config.css.userFailureMsg || 'alert alert-warning';
+  // Property: cfg.css.button
+  // Default: btn btn-info
   cfg.css.button = config.css.button || 'btn btn-info';
+  // Property: cfg.css.form.
+  // Default: rf-form
   cfg.css.form = config.css.form || 'rf-form';
+  // Property: cfg.css.inputDiv
+  // Default: form-group
   cfg.css.inputDiv = config.css.inputDiv || 'form-group';
+  // Property: cfg.css.checkDiv
+  // Default: form-check
   cfg.css.checkDiv = config.css.checkDiv || 'form-check';
+  // Property: cfg.css.input
+  // Default: form-control
   cfg.css.input = config.css.input || 'form-control';
+  // Property: cfg.css.checkInput
+  // Default: form-check-input
   cfg.css.checkInput = config.css.checkInput || 'form-check-input';
-  cfg.css.textarea = config.css.input || 'form-control';
+  // Property: cfg.css.textarea
+  // Default: form-control
+  cfg.css.textarea = config.css.textarea || 'form-control';
+  // Property: cfg.css.label
+  // Default: rf-label
   cfg.css.label = config.css.label || 'rf-label';
+  // Property: cfg.css.sr_only
+  // Default: sr-only
   cfg.css.sr_only = config.css.sr_only || 'sr-only';
+  // Property: cfg.css.checkLabel
+  // Default: form-check-label
   cfg.css.checkLabel = config.css.checkLabel || 'form-check-label';
+  // Property: cfg.css.select
+  // Default: custom-select
   cfg.css.select = config.css.select || 'custom-select';
+  // Property: cfg.css.small
+  // Default: text-muted form-text
   cfg.css.small = config.css.small || 'text-muted form-text';
 
   /**
-   * Handling communication.
+   * Communicating with the user.
    */
   function clearUserMsg() {
     userMsgDiv.innerHTML = '';
@@ -98,26 +159,25 @@ function remoteForm(config) {
       userMsgDiv.className = cfg.css.userSuccessMsg;
     }
   }
-
   function adminMsg(msg) {
     console.log(msg);
   }
-
   function friendlyErr(err) {
     adminMsg(err);
     userMsg("Sorry, we encountered an error! See console log for more details.");
   }
+
   // Sanity checking
   if (cfg.entity != 'Profile' && cfg.entity != 'ContributionPage') {
     friendlyErr("Only Profile and ContributionPage entities is currently supported.");
     return false;
   }
 
-  // Initialize our global entities. We should end up with a parentDiv that
-  // contains a userMsg div (for giving feedback to the user), form (containing
-  // the form the user will submit) and an initButton that kicks everything
-  // off.
-  var parentDiv = document.getElementById(cfg.parentId);
+  // Initialize our global entities. We should end up with a *parentDiv* that
+  // contains a *userMsg* div (for giving feedback to the user), *form* (containing
+  // the form the user will submit) and an *initButton* that kicks everything
+  // off. These are all global variables.
+  var parentDiv = document.getElementById(cfg.parentElementId);
   var form = document.createElement('form');
   form.id = 'remoteForm-form-' + cfg.entity + cfg.id;
   form.className = cfg.css.form;
@@ -135,14 +195,18 @@ function remoteForm(config) {
   });
   parentDiv.appendChild(initButton);
 
+  // If the user wants to auto init the form, do so now.
   if (cfg.autoInit == 1) {
     displayForm();
   }
 
-  // Make a request for a list of fields to display then process the
+  // Now we are done. Event handler code is below.
+
+  // Make a request for a list of fields to display, then process the
   // response by passing it to buildForm.
   function displayForm() {
     parentDiv.appendChild(form);
+
     // Clear any left over user messages.
     clearUserMsg();
 
@@ -172,9 +236,12 @@ function remoteForm(config) {
       params: params 
     };
 
+    // Once we get a response, send the response to processGetFieldsResponse.
     post(cfg.url, args, processGetFieldsResponse);
   }
 
+  // Validate the response we get, then pass the validated fields to the
+  // buildForm function to build the fields.
   function processGetFieldsResponse(data) {
     if (data['is_error'] == 1) {
       friendlyErr(data['error_message']);
@@ -212,17 +279,28 @@ function remoteForm(config) {
     return true;
   }
 
+  // Function: submitData
+  //
+  // When the user has filled in all their data and click submit, submitData
+  // is invoked. If you want to first process a credit card, then you can
+  // pass the configuration parameter customSubmitDataFunc to override.
   function submitData(fields) {
-    var params = processSubmittedData(fields);
-    if (cfg.stripeApiKey) {
-      initStripe(params);
+    var params = processSubmitData(fields);
+    if (cfg.customSubmitDataFunc) {
+      cfg.customSubmitDataFunc(params, submitDataPost, cfg.customSubmitDataParams);
     }
     else {
-      post(cfg.url, params, processSubmitDataResponse);
+      submitDataPost(params);
     }
   }
 
-  function processSubmittedData(fields) {
+  function submitDataPost(params) {
+    post(cfg.url, params, processSubmitDataResponse);
+  }
+
+  // Take what the user submitted, and parse it into a more easily usable
+  // object.
+  function processSubmitData(fields) {
     var params;
     if (cfg.entity == 'Profile') {
       params = {
@@ -371,6 +449,8 @@ function remoteForm(config) {
           }
         } else {
           onError(new Error('Response returned with non-OK status'));
+          console.log(url);
+          console.log(params);
           console.log(request);
         }
       }
@@ -433,10 +513,20 @@ function remoteForm(config) {
   }
 
   /**
+   * Function: createFieldDiv
+   *
    * Create a single field with associated label wrapped in a div.
    *
    * This function can be overridden using the createFieldDivFunc config
    * parameter.
+   *
+   * Parameters:
+   *  key - the unique field key
+   *  type - the type of field to build
+   *  createFieldFunc - the function to use to build the field, override
+   *                    as needed. See createField for a model.
+   *  wrapFieldFunc - the function to use to build the div around the field,
+   *                  override as needed. See wrapField as a model.
    */
   function createFieldDiv(key, def, type, createFieldFunc, wrapFieldFunc) {
     var field = createFieldFunc(key, def, type);
@@ -790,46 +880,6 @@ function remoteForm(config) {
     return createInput(key, def, 'date'); 
   }
 
-  /**
-   * Stripe related functions.
-   */
-  function initStripe(params) {
-    var handler = StripeCheckout.configure({
-      key: cfg.stripeApiKey,
-      image: cfg.stripeCheckoutLogoUrl,
-      locale: 'auto',
-      token: function(token) {
-        params['params']['stripe_token'] = token.id;
-        console.log(params);
-        post(cfg.url, params, processSubmitDataResponse);
-      }
-    });
-
-    // Look for a field that looks like an email field so we don't make
-    // the user fill in their email address twice.
-    var email = null;
-    for (var field_name in params['params']) {
-      console.log("Checking", field_name);
-      if (field_name.search('email') != -1) {
-        email = params['params'][field_name];
-        break;
-      }
-    }
-
-    // Open Checkout with further options:
-    handler.open({
-      name: cfg.stripeCheckoutName,
-      description: cfg.stripeCheckoutDescription,
-      zipCode: cfg.stripeRequireZipCode,
-      email: email,
-      amount: params['params']['amount'] * 100
-    });
-
-    // Close Checkout on page navigation:
-    window.addEventListener('popstate', function() {
-      handler.close();
-    });
-  }
 }
 
 

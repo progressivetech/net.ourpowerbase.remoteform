@@ -174,23 +174,24 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
   $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
 
+  $extra_js_url = NULL;
+  $extra_js_params = NULL;
   if ($entity == 'ContributionPage') {
-    $init_txt = 'Make a contribution';
-  }
-  else {
-    $init_txt = 'Join our mailing list';
+    // Check to see if this is a stripe payment processor.
+    //$stripe_keys = remoteform_get_stripe_keys($id);
+    //if ($stripe_keys) {
+     // $extra_js_url = htmlentities('<script src="https://checkout.stripe.com/checkout.js"></script>') . '<br />';
+      //$extra_js_params = htmlentities('stripeApiKey: "' . remoteform_contribution_page_stripe_api_
   }
 
   return 
       htmlentities('<div id="remoteForm"></div>') . '<br />' .
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
+        $extra_js_url .
       htmlentities('<script> var config = { ') . '<br />' .
       htmlentities(' url: "' . $post_url . '",') . '<br>' .
       htmlentities(' id: ' . $id . ',') . '<br/>' .
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
-      htmlentities(' initTxt: "' . $init_txt . '",') . '<br/>' .
-      htmlentities(' autoInit: false,') . '<br />' .
-      htmlentities(' displayLabels: false') .  '<br />' .
       htmlentities('};') . '<br />' .
       htmlentities('remoteForm(config);') . '<br />' .
       htmlentities('</script>');
