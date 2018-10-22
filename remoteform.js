@@ -714,6 +714,8 @@ function remoteForm(config) {
   /**
    * ### createFieldDiv
    *
+   * ```createFieldDiv(key, def, type, createFieldFunc, wrapFieldFunc)```
+   *
    * Create a single field with associated label wrapped in a div.
    *
    * This function can be overridden using the createFieldDivFunc config
@@ -758,7 +760,9 @@ function remoteForm(config) {
   }
 
   /**
-   * ### Return field type.
+   * ### getType
+   *
+   * ```getType(def)```
    *
    * If you pass in a field definition provided by CiviCRM, this function
    * returns an html input type, working around some CiviCRM idiosyncracies.
@@ -791,6 +795,8 @@ function remoteForm(config) {
 
   /**
    * ### createField
+   *
+   * ```createField(key, def, type)```
    *
    * Return an HTML entity that renders the given field.
    *
@@ -832,6 +838,8 @@ function remoteForm(config) {
 
   /**
    * ### wrapField
+   *
+   * ```wrapField(key, def, field)```
    *
    * Return an HTML entity that includes both the given field and a label.
    *

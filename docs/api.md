@@ -211,6 +211,8 @@ Default: text-muted form-text
 
 ### createFieldDiv
 
+```createFieldDiv(key, def, type, createFieldFunc, wrapFieldFunc)```
+
 Create a single field with associated label wrapped in a div.
 
 This function can be overridden using the createFieldDivFunc config
@@ -245,7 +247,9 @@ createFieldFunc or wrapFieldFunc, then simply call createFieldDiv but pass
 it your own function names instead of the default ones. Or you can pick
 out a field type you want to cusotmize or even a field key and only change
 the behavior for that one.
-### Return field type.
+### getType
+
+```getType(def)```
 
 If you pass in a field definition provided by CiviCRM, this function
 returns an html input type, working around some CiviCRM idiosyncracies.
@@ -256,6 +260,8 @@ returns an html input type, working around some CiviCRM idiosyncracies.
 #### Returns
 A string field type
 ### createField
+
+```createField(key, def, type)```
 
 Return an HTML entity that renders the given field.
 
@@ -268,6 +274,8 @@ Return an HTML entity that renders the given field.
 
 HTML entity.
 ### wrapField
+
+```wrapField(key, def, field)```
 
 Return an HTML entity that includes both the given field and a label.
 
