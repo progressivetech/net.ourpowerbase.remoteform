@@ -114,10 +114,18 @@ function remoteForm(config) {
   /**
    * ### cfg.entity
    *
-   * The CiviCRM entity we are creating (currently only Profile is supported). 
+   * The CiviCRM entity we are creating (currently only Profile and ContributionPage are supported). 
    * Default: Profile.
    */
   cfg.entity = config.entity || 'Profile';
+
+  /**
+   * ### cfg.contributionIsTest
+   *
+   * For ContributionPage entities only, indicats whether you should submit to the
+   * test payment processor or the live payment processor. Default: false
+   */
+  cfg.paymentTestMode = config.paymentTestMode || false;
 
   /**
    * ### cfg.autoInit
@@ -127,14 +135,6 @@ function remoteForm(config) {
    * order to display the form. Default: true.
    */
   cfg.autoInit = config.autoInit == false ? false : true;
-
-  /**
-   * ### cfg.contributionIsTest
-   *
-   * For contributions only, indicats whether you should submit to the
-   * test payment processor or the live payment processor. Default: false
-   */
-  cfg.paymentTestMode = config.paymentTestMode || false;
 
   /** 
    * ### cfg.initTxt
