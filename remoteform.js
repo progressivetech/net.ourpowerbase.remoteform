@@ -132,7 +132,7 @@ function remoteForm(config) {
   cfg.entity = config.entity || 'Profile';
 
   /**
-   * ### cfg.contributionIsTest
+   * ### cfg.paymentTestMode
    *
    * For ContributionPage entities only, indicates whether you should submit to the
    * test payment processor or the live payment processor. Default: false
