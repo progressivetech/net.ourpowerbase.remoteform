@@ -1,4 +1,4 @@
-# net.ourpowerbase.remoteForm
+# Remoteform 
 
 Remoteform allows you to add a CiviCRM form to a remote web site via a few lines of javascript code.
 
