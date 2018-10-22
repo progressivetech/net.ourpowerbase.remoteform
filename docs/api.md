@@ -1,4 +1,4 @@
-# remoteForm
+# Remoteform
 ## Introduction
 
 All example code uses YOURSITE.ORG in place of the domain name of your
@@ -77,7 +77,19 @@ remoteForm(config);
 ### cfg 
 
 cfg is a sanitized global configuration object based on config, which
-is the object passed in by the user.
+is the object passed in by the user. All the parameters below can be
+changed by adding or editing your ```var config``` line. For example,
+if you read about cfg.parentElementId and decide you want to change the
+parentId, you would pass the following to the remoteForm function:
+
+```
+var config = { 
+url: "https://YOURSITE.ORG/civicrm/remoteform",
+id: 1, 
+entity: "ContributionPage",
+parentId: "my-parent-id"
+};
+```
 ### cfg.url
 
 The url of the CiviCRM installation we are posting to. Required.
@@ -89,17 +101,17 @@ The id of the entity (profile id, contribution page id, etc.). Required.
 The id of the element to which the form will be appended. Default: remoteform.
 ### cfg.entity
 
-The CiviCRM entity we are creating (currently only Profile is supported). 
+The CiviCRM entity we are creating (currently only Profile and ContributionPage are supported). 
 Default: Profile.
+### cfg.contributionIsTest
+
+For ContributionPage entities only, indicates whether you should submit to the
+test payment processor or the live payment processor. Default: false
 ### cfg.autoInit
 
 How the form will be initialized - either true if the form will be
 initialized on page load or false if a button will need to be clicked in
 order to display the form. Default: true.
-### cfg.contributionIsTest
-
-For contributions only, indicats whether you should submit to the
-test payment processor or the live payment processor. Default: false
 ### cfg.initTxt
 
 If cfg.autoInit is false, the text displayed on the button to click
