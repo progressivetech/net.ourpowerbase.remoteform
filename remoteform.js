@@ -441,7 +441,6 @@ function remoteForm(config) {
   // Validate the response we get, then pass the validated fields to the
   // buildForm function to build the fields.
   function processGetFieldsResponse(data) {
-    console.log("data from request", data);
     if (data['is_error'] == 1) {
       friendlyErr(data['error_message']);
       return;
