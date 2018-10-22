@@ -12,9 +12,9 @@ Enter your web site's address. Only the addresses listed here will be able to su
 
 ![Choose URLs to allow](/images/cors-configuration.png)
 
-Second, edit the profile or contribution page to enable remoteform. Here's an example of a contribution page:
+Second, edit the profile or contribution page to enable remoteform. Here's an example of a profile page (look in Profile Settings -> Advanced Settings):
 
-![Enable remoteform for a contribution](/images/contribution-standard-enable.png)
+![Enable remoteform for a contribution](/images/profile-enable.png)
 
 Third, copy and paste the provided javascript code to your remote web site and you are done.
 
