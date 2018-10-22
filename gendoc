@@ -1,0 +1,5 @@
+#!/bin/sh
+
+awk '#/**#{flag=1;next}#*/#{flag=0}flag' remoteform.js
+
+cat remoteform.js | awk '/[/][*][*]/{flag=1;next}/[*][/]/{flag=0}flag' | sed -E 's/^([ *]*)//g' > docs/api.md

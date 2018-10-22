@@ -1,79 +1,48 @@
 # net.ourpowerbase.remoteForm
 
-![Screenshot](/images/screenshot.png)
+Remoteform allows you to add a CiviCRM form to a remote web site via a few lines of javascript code.
 
-RemoteForm allows you to place a few lines of javascript on a remote (or same) site to your CiviCRM installation.
+Currently, only profiles and contribution pages are supported (events and petitions are in the works).
 
-e.g.:
+## How does it work?
 
-    <script src="https://checkout.stripe.com/checkout.js"></script>
-    <script src="https://demo.loc.cx/sites/all/extensions/jssubmit/jssubmit.js"></script>
+First, click `Adminstration -> Customize data and screens -> Remote Forms.`
 
-    <div id="jsSubmitFields"></div>
-    <button id="jsSubmitButton">Purchase</button>
-    <script>
-    var jsSubmitParams = {
-      onError: console.log,
-      onSuccess: console.log,
-      apiKey: 'pk_test_6pRNASCoBOKtIshFeQd4XMUh',
-      url: 'https://demo.loc.cx/civicrm/ssp',
-      fields: [
-        {
-        'id': 'jsSubmitFirstName',
-        'label': 'First Name',
-        'type': 'text',
-        },
-        {
-        'id': 'jsSubmitLastName',
-        'label': 'Last Name',
-        'type': 'text',
-        },
-        {
-        'id': 'jsSubmitAmount',
-        'label': 'Amount',
-        'type': 'text',
-        }
-      ],
-    }
+Enter your web site's address. Only the addresses listed here will be able to submit forms to your CiviCRM instance.
 
-    jsSubmitInit();
-    jsSubmitCreateFields();
+![Choose URLs to allow](/images/cors-configuration.png)
+
+Second, edit the profile or contribution page to enable remoteform. Here's an example of a contribution page:
+
+![Enable remoteform for a contribution](/images/contribution-standard-enable.png)
+
+Third, copy and paste the provided javascript code to your remote web site and you are done.
+
+![Profile shown on remote site](/images/profile-on-remote-site.png)
+
+## Can I configure how the fields are displayed. 
+
+Yes, the javascript api is [fully documented](docs/api.md). You can change just about everything.
+
+## Is this secure?
+
+This extension does open a tiny hole in your CiviCRM armour. Specifically, it allows the sites you specify to by-pass the normal [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) restrictions.
+
+CORS prevents one web site from getting your web browser to post data to another web site, unless the website you are posting to specifically allows it. 
+
+There is a good reason for CORS! The main reason is to prevent one malicious web site from taking over your browser and posting information to another web site without your knowledge (for example, a web site could secretly get your browser to change your password in your CiviCRM installation and then take over your account).
+
+Remoteform mitigates against this danger in two ways:
+
+ * You specify the sites to allow. If you specify your organization's web site, then a malicious user would have to take over your web site first
+ * Remoteform refuses to operate if your browser is logged into your CiviCRM installation. Even if a malicious user could take over your site, they would not be able to do any damage to your site because all operations are performed as an anonymous user.
+
+## License
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
 ## Requirements
 
-* PHP v5.4+
-* CiviCRM (4.7)
+* PHP v7.0+
+* CiviCRM (5.0)
 
-## Installation (Web UI)
-
-This extension has not yet been published for installation via the web UI.
-
-## Installation (CLI, Zip)
-
-Sysadmins and developers may download the `.zip` file for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
-
-```bash
-cd <extension-dir>
-cv dl net.ourpowerbase.jssubmit@https://github.com/FIXME/net.ourpowerbase.jssubmit/archive/master.zip
-```
-
-## Installation (CLI, Git)
-
-Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
-
-```bash
-git clone https://github.com/FIXME/net.ourpowerbase.jssubmit.git
-cv en jssubmit
-```
-
-## Usage
-
-(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
-
-## Known Issues
-
-(* FIXME *)
