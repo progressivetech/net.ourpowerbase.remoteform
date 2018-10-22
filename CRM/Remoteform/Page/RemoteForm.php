@@ -9,7 +9,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     try {
       $data = $this->sanitizeInput($data);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (Exception $e) {
       $this->exitError($e->getMessage());
     }
 
@@ -18,7 +18,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
       $this->exitSuccess($result['values']);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (Exception $e) {
       $this->exitError($e->getMessage());
     }
   }
