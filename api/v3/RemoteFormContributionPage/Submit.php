@@ -48,6 +48,15 @@ function _rf_include_credit_card_fields($id) {
 function _rf_add_page_details($id, &$params) {
   $values = remoteform_get_contribution_page_details($id);
 
+  // If we are in test mode, return the test payment processor id
+  // instead of the live one which will be returned by
+  // remoteform_get_contribution_page_details.
+
+  $ppid = $values['payment_processor'];
+  if ($params['test_mode'] == 1)
+    $ppid = CRM_Financial_BAO_PaymentProcessor::getTestProcessorId($ppid);
+  }
+
   // We send three kinds of information out:
   // 1. Fields that should be rendered for input
   // 2. Fields that should be rendered read-only
@@ -62,7 +71,7 @@ function _rf_add_page_details($id, &$params) {
    'start_date' => $values['start_date'],
    'currency' => $values['currency'],
    'min_amount' => $values['min_amount'],
-   'payment_processor' =>  $values['payment_processor'],
+   'payment_processor' =>  $ppid,
   );
 }
 

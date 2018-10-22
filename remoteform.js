@@ -405,9 +405,6 @@ function remoteForm(config) {
     // Clear any left over user messages.
     clearUserMsg();
 
-    if (cfg.paymentTestMode) {
-      userMsg("In testing mode.");
-    }
     var params;
     var submitEntity = cfg.entity;
 
@@ -427,6 +424,14 @@ function remoteForm(config) {
       // Override the entity to use our own ContributionPage entity
       // because the built-in one doesn't handle our use case.
       submitEntity = 'RemoteFormContributionPage';
+
+      // Add testing mode if necessary.
+      if (cfg.paymentTestMode) {
+        userMsg("In testing mode.");
+        params["test_mode"] = true;
+      }
+    }
+
     }
     var args = {
       action: 'getfields',
