@@ -34,7 +34,7 @@ the CSS classes that are printed.
 Next up:
 
 ``` 
-<script * src="https://YOURSITE.ORG/sites/all/extensions/remoteform/remoteform.js"></script>
+<script src="https://YOURSITE.ORG/sites/all/extensions/remoteform/remoteform.js"></script>
 ```
 
 This line is required, it pulls in the javascript that makes everything
@@ -103,7 +103,7 @@ The id of the element to which the form will be appended. Default: remoteform.
 
 The CiviCRM entity we are creating (currently only Profile and ContributionPage are supported). 
 Default: Profile.
-### cfg.contributionIsTest
+### cfg.paymentTestMode
 
 For ContributionPage entities only, indicates whether you should submit to the
 test payment processor or the live payment processor. Default: false

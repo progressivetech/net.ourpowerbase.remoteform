@@ -35,7 +35,7 @@
  * Next up:
  *
  * ``` 
- * <script * src="https://YOURSITE.ORG/sites/all/extensions/remoteform/remoteform.js"></script>
+ * <script src="https://YOURSITE.ORG/sites/all/extensions/remoteform/remoteform.js"></script>
  * ```
  *
  * This line is required, it pulls in the javascript that makes everything
