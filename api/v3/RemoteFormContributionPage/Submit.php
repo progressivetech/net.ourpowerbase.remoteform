@@ -53,7 +53,7 @@ function _rf_add_page_details($id, &$params) {
   // remoteform_get_contribution_page_details.
 
   $ppid = $values['payment_processor'];
-  if ($params['test_mode'] == 1)
+  if ($params['test_mode'] == 1) {
     $ppid = CRM_Financial_BAO_PaymentProcessor::getTestProcessorId($ppid);
   }
 
