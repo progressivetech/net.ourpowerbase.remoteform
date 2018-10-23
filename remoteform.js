@@ -431,8 +431,6 @@ function remoteForm(config) {
         params["test_mode"] = true;
       }
     }
-
-    }
     var args = {
       action: 'getfields',
       entity: submitEntity,
