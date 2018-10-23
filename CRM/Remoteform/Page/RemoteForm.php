@@ -132,10 +132,12 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         // Sanitize input parameters.
         $api_action = $input_params['api_action'] == 'submit' ? 'submit' : NULL;
         $get_options = $input_params['get_options'] == 'all' ? 'all' : NULL;
+        $test_mode = $input_params['test_mode'] == '1' ? '1' : NULL;
         $params = array(
           'contribution_page_id' => intval($input_params['contribution_page_id']),
           'api_action' => $api_action,
-          'get_options' => $get_options 
+          'get_options' => $get_options,
+          'test_mode' => $test_mode
         );
         
         CRM_Core_Error::debug_var('params', $params);
