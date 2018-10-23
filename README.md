@@ -16,7 +16,7 @@ submit forms to your CiviCRM instance.
 ![Choose URLs to allow](/images/cors-configuration.png)
 
 Second, edit the profile or contribution page to enable remoteform. Here's an
-example of a profile page (look in Profile Settings -> Advanced Settings):
+example of a profile page (look in `Profile Settings -> Advanced Settings`):
 
 ![Enable remoteform for a contribution](/images/profile-enable.png)
 
