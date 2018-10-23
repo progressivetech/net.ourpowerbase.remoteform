@@ -121,7 +121,7 @@ function remoteForm(config) {
    *
    * The id of the element to which the form will be appended. Default: remoteform.
    */
-  cfg.parentElementId = config.parentID || 'remoteForm';
+  cfg.parentElementId = config.parentElementID || 'remoteForm';
 
   /**
    * ### cfg.entity
