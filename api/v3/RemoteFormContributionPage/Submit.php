@@ -12,7 +12,8 @@ use CRM_Remoteform_ExtensionUtil as E;
 function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apirequest) {
   if (isset($apirequest['params']['contribution_page_id'])) {
     $contribution_page_id = $apirequest['params']['contribution_page_id'];
-    _rf_add_page_details($contribution_page_id, $params);
+    $test_mode = CRM_Utils_Array::value('test_mode', $apirequest['params'], FALSE);
+    _rf_add_page_details($contribution_page_id, $params, $test_mode);
     _rf_add_profile_fields($contribution_page_id, $params);
     _rf_add_price_fields($contribution_page_id, $params, $params['control']['currency']);
     // Omit credit card fields for Stripe (and any other javascript based payment processor).
@@ -45,7 +46,7 @@ function _rf_include_credit_card_fields($id) {
   return TRUE;
 }
 
-function _rf_add_page_details($id, &$params) {
+function _rf_add_page_details($id, &$params, $test_mode = FALSE) {
   $values = remoteform_get_contribution_page_details($id);
 
   // If we are in test mode, return the test payment processor id
@@ -53,7 +54,7 @@ function _rf_add_page_details($id, &$params) {
   // remoteform_get_contribution_page_details.
 
   $ppid = $values['payment_processor'];
-  if ($params['test_mode'] == 1) {
+  if ($test_mode) {
     $ppid = CRM_Financial_BAO_PaymentProcessor::getTestProcessorId($ppid);
   }
 
