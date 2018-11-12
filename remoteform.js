@@ -171,7 +171,7 @@ function remoteForm(config) {
   cfg.cancelTxt = config.cancelTxt || 'Cancel';
 
   /** 
-   * ### cfg.SuccessMsg
+   * ### cfg.successMsg
    *
    * The message displayed to the user upon successful submission of the
    * form. Default: Thank you! Your submission was received.
