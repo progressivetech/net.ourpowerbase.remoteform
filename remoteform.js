@@ -242,7 +242,7 @@ function remoteForm(config) {
   cfg.css = config.css || {};
 
   /**
-   * #### cfg.css.SuccessMsg
+   * #### cfg.css.userSuccessMsg
    *
    * Default: alert alert-success
    */

@@ -122,7 +122,7 @@ The text to display on the form's submit button. Default: Join.
 ### cfg.cancelTxt
 
 The text to display on the form's cancel button. Default: Cancel.
-### cfg.SuccessMsg
+### cfg.successMsg
 
 The message displayed to the user upon successful submission of the
 form. Default: Thank you! Your submission was received.
@@ -165,7 +165,7 @@ want more control over look and feel. The defaults are designed to work
 with bootstrap. If you are not using bootstrap, you may want to include
 the remoteform.css file which tries to make things look nice with the
 default classes.
-#### cfg.css.SuccessMsg
+#### cfg.css.userSuccessMsg
 
 Default: alert alert-success
 #### cfg.css.FailureMsg
