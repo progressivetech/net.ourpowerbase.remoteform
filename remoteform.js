@@ -56,7 +56,7 @@
  * You must pass a config option to the remoteForm function:
  *
  * ```
- * var config = { 
+ * var remoteFormConfig = { 
  *  url: "https://YOURSITE.ORG/civicrm/remoteform",
  *  id: 1, 
  *  entity: "ContributionPage"
@@ -71,7 +71,7 @@
  * Finally, you have to call the function:
  *
  * ```
- * remoteForm(config); 
+ * remoteForm(remoteFormConfig); 
  * ```
  */
 function remoteForm(config) {

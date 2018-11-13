@@ -201,13 +201,13 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
       htmlentities('<div id="remoteForm"></div>') . '<br />' .
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
         $extra_js_urls .
-      htmlentities('<script> var config = { ') . '<br />' .
+      htmlentities('<script> var remoteFormConfig = { ') . '<br />' .
       htmlentities(' url: "' . $post_url . '",') . '<br>' .
       htmlentities(' id: ' . $id . ',') . '<br/>' .
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
         $extra_js_params .
       htmlentities('};') . '<br />' .
-      htmlentities('remoteForm(config);') . '<br />' .
+      htmlentities('remoteForm(remoteFormConfig);') . '<br />' .
       htmlentities('</script>');
 }
 
