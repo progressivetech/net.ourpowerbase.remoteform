@@ -55,7 +55,7 @@ you want to use a div already present on your page but with a different id.
 You must pass a config option to the remoteForm function:
 
 ```
-var config = { 
+var remoteFormConfig = { 
 url: "https://YOURSITE.ORG/civicrm/remoteform",
 id: 1, 
 entity: "ContributionPage"
@@ -70,7 +70,7 @@ the available parameters.
 Finally, you have to call the function:
 
 ```
-remoteForm(config); 
+remoteForm(remoteFormConfig); 
 ```
 ## Properties
 
@@ -96,7 +96,7 @@ The url of the CiviCRM installation we are posting to. Required.
 ### cfg.id
 
 The id of the entity (profile id, contribution page id, etc.). Required.
-### cfgt.parentElementId
+### cfg.parentElementId
 
 The id of the element to which the form will be appended. Default: remoteform.
 ### cfg.entity
