@@ -319,13 +319,15 @@ function remoteform_get_payment_processor_type($id) {
   $details = remoteform_get_contribution_page_details($id);
   $payment_processor_id = $details['payment_processor'];
 
-  $sql = "SELECT ppt.name FROM civicrm_payment_processor_type ppt JOIN
-    civicrm_payment_processor pp ON pp.payment_processor_type_id = ppt.id
-    WHERE pp.id = %0";
-  $dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($payment_processor_id, 'Integer')));
-  $dao->fetch();
-  if (isset($dao->name)) {
-    return $dao->name;
+  if ($payment_processor_id) {
+    $sql = "SELECT ppt.name FROM civicrm_payment_processor_type ppt JOIN
+      civicrm_payment_processor pp ON pp.payment_processor_type_id = ppt.id
+      WHERE pp.id = %0";
+    $dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($payment_processor_id, 'Integer')));
+    $dao->fetch();
+    if (isset($dao->name)) {
+      return $dao->name;
+    }
   }
   return NULL;
 }
