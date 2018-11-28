@@ -1065,7 +1065,7 @@ function remoteForm(config) {
           }
         }
         else {
-          optionDisplay = def.options[option];
+          optionDisplay = def.options[optionId];
         }
 
         optionInput.value = optionId;
