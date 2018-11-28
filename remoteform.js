@@ -956,9 +956,12 @@ function remoteForm(config) {
     // One label for the collection (we include a label even if
     // cfg.displayLabels is false becaues there is no other way to show it.
     var label = document.createElement('label');
-    label.className = cfg.css.label;
-    label.innerHTML = def.title;
-    collectionDiv.appendChild(label);
+    // Always create a label, but don't create two if we already display labels.
+    if (cfg.displayLabels !== true) {
+      label.className = cfg.css.label;
+      label.innerHTML = def.title;
+      collectionDiv.appendChild(label);
+    }
     
     // Another div to enclose just the options.
     var optionsDiv = document.createElement('div');
