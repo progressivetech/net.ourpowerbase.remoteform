@@ -209,8 +209,8 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
         $extra_js_params .
       htmlentities('};') . '<br />' .
       htmlentities('if (typeof remoteForm !== "function") {') . '<br />' .
-      htmlentities('  document.getElementById("remoteForm").innerHTML = "Oh no! I was not able to display the form! Please check your security settings (for example Privacy Badger) and allow remote javascript to be displayed from ' + $base_url + '"') . '<br />';
-      htmlentities(' document.getElementById("remoteForm").style.color = "red";') . '<br />' .
+      htmlentities('  document.getElementById("remoteForm").innerHTML = "Oh no! I was not able to display the form! Please check your security settings (for example Privacy Badger) and allow remote javascript to be displayed from ' . $base_url . '."') . '<br />' .
+      htmlentities('  document.getElementById("remoteForm").style.color = "red";') . '<br />' .
       htmlentities('}') . '<br />' .
       htmlentities('else {') . '<br />' .
       htmlentities('  remoteForm(remoteFormConfig);') . '<br />' .
