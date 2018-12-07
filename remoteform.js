@@ -1051,7 +1051,8 @@ function remoteForm(config) {
             });
           }
           else {
-            optionDisplay = optionObj['label'] + ' (' + prefix + parseFloat(optionObj['amount']).toFixed(2) + ')';
+            optionDisplay = optionObj['label'] ? optionObj['label'] + ' - ' : '';
+            optionDisplay += prefix + parseFloat(optionObj['amount']).toFixed(2);
             optionInput.setAttribute('data-amount', optionObj['amount']);
             if (pricesetHasOtherAmountOption) {
               // This is not an other amount field, but since there is 
