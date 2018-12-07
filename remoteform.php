@@ -176,6 +176,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
   $css_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.css');
   $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
+  $base_url = parse_url(CIVICRM_UF_BASEURL, PHP_URL_HOST);
 
   $extra_js_urls = NULL;
   $extra_js_params = NULL;
@@ -207,7 +208,13 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
         $extra_js_params .
       htmlentities('};') . '<br />' .
-      htmlentities('remoteForm(remoteFormConfig);') . '<br />' .
+      htmlentities('if (typeof remoteForm !== "function") {') . '<br />' .
+      htmlentities('  document.getElementById("remoteForm").innerHTML = "Oh no! I was not able to display the form! Please check your security settings (for example Privacy Badger) and allow remote javascript to be displayed from ' + $base_url + '"') . '<br />';
+      htmlentities(' document.getElementById("remoteForm").style.color = "red";') . '<br />' .
+      htmlentities('}') . '<br />' .
+      htmlentities('else {') . '<br />' .
+      htmlentities('  remoteForm(remoteFormConfig);') . '<br />' .
+      htmlentities('}') . '<br />' .
       htmlentities('</script>');
 }
 
