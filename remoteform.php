@@ -173,9 +173,11 @@ function remoteform_civicrm_idsException(&$skip) {
 function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $query = NULL;
   $absolute = TRUE;
+  $fragment = NULL;
+  $frontend = TRUE;
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
   $css_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.css');
-  $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute);
+  $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute, $fragment, $frontend);
   $base_url = parse_url(CIVICRM_UF_BASEURL, PHP_URL_HOST);
 
   $extra_js_urls = NULL;
