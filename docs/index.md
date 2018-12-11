@@ -1,15 +1,27 @@
 # Remoteform
 
-Remoteform allows you to add a CiviCRM form to a remote web site via a few
-lines of javascript code.
+Remoteform is intended for CiviCRM users who maintain their web site on a
+separate server from their CiviCRM installation (e.g. for
+[Powerbase](https://ourpowerbase.net/) users).
+
+With remoteform you can add a fully functional CiviCRM form to a remote web
+site via a few lines of javascript code. Your site visitors will no longer need
+to be re-directed to your CiviCRM installation to fill out a profile or make a
+contribution. There is no need to match your CiviCRM theme with your web site
+look and feel. *The entire interaction takes place on your own web site.*
+
+Furthermore, with the help of a fully documented [api](api.md) users with
+advanced javascript and CSS skills can make the form look exactly how you want
+it, so it completely blends in with your web site's look and feel.
+
+To use Remoteform, your web site must run via https.
 
 Using Remoteform is a two step process.
 
 1. Set things up in CiviCRM.
 2. Set things up on your web site
 
-Before you begin, be sure you are logged into both CiviCRM and also the part of
-your web site that allows you to add content.
+Before you begin, be sure you are logged into both CiviCRM and your web site.
 
 ## In CiviCRM
 
@@ -44,6 +56,9 @@ building web sites.
 
  * [Add remoteform to Drupal](drupal.md)
  * [Add remoteform to Wordpress](wordpress.md)
+
+Most web site editing tools do not let you paste in javascript code without
+making some kind of adjustment.
 
 ## Debugging
 
