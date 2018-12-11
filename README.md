@@ -8,6 +8,8 @@ petitions are in the works).
 
 ## How does it work?
 
+Full [documentation is available](docs/index.md). See below for an overview.
+
 First, click `Adminstration -> Customize data and screens -> Remote Forms.`
 
 Enter your web site's address. Only the addresses listed here will be able to
