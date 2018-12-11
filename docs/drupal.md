@@ -19,8 +19,8 @@ Configuration -> Content Authoring -> Text Formats`.
 
 Then, find the Full HTML option and click the link to configure it.
 
-![Select Full HTML](../images/drupal-change-full-html.png)
+![Edit Full HTML](../images/drupal-change-full-html.png)
 
 Lastly, select a role you are in or that you want to provide access.
 
-![Select Full HTML](../images/drupal-change-roles.png)
+![Change Role](../images/drupal-change-roles.png)
