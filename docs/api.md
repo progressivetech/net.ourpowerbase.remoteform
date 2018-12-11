@@ -247,6 +247,30 @@ createFieldFunc or wrapFieldFunc, then simply call createFieldDiv but pass
 it your own function names instead of the default ones. Or you can pick
 out a field type you want to cusotmize or even a field key and only change
 the behavior for that one.
+
+Here's an example of overriding createFieldFunc to change the list of
+groups displayed when a profile includes groups.
+
+function myCreateFieldDiv(key, def, type, createFieldFunc, wrapFieldFunc) {
+if (key == 'group_id') {
+def.options = {
+1: "Group one",
+2: "group two"
+}
+}
+var field = createFieldFunc(key, def, type);
+if (field === null) {
+return null;
+}
+return wrapFieldFunc(key, def, field);
+}
+
+Once you have defined this function, you could pass in the paramter:
+
+createFieldDivFunc: myCreateFieldDiv
+
+to your remoteFormConfig.
+
 ### getType
 
 ```getType(def)```
