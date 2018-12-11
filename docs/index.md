@@ -53,9 +53,11 @@ When you add your javascript code, you may get an error telling you to check the
 
 You can do that in either Firefox or Chrome by right clicking on the page and choosing the Inspector. Below is what it looks like in Firefox.
 
-![Check console log](/images/debug-console.png)
+![Right click to inspect](/images/right-click-inspect.png)
 
 Click the Console tab, and check for messages.
+
+![Check console log](/images/debug-console.png)
 
 In this case, the error message is telling us that CORS is not set correctly.
 That means that the web site your pasting the javascript code into has not bee
