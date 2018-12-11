@@ -251,6 +251,7 @@ the behavior for that one.
 Here's an example of overriding createFieldFunc to change the list of
 groups displayed when a profile includes groups.
 
+```
 function myCreateFieldDiv(key, def, type, createFieldFunc, wrapFieldFunc) {
 if (key == 'group_id') {
 def.options = {
@@ -264,10 +265,13 @@ return null;
 }
 return wrapFieldFunc(key, def, field);
 }
+```
 
 Once you have defined this function, you could pass in the paramter:
 
+```
 createFieldDivFunc: myCreateFieldDiv
+```
 
 to your remoteFormConfig.
 
