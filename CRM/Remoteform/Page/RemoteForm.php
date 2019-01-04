@@ -16,6 +16,15 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     try {
       // CRM_Core_Error::debug_var('data', $data);
       $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
+      // Special exception - The API profile submit function doesn't add
+      // contacts to a group or send email notification, even if the profile
+      // specifies that it should.
+      // See: https://lab.civicrm.org/dev/core/issues/581
+      if (strtolower($data['entity']) == 'profile' && strtolower($data['action']) == 'submit') {
+        $uf_group_id = $data['params']['profile_id'];
+        $contact_id = $result['id'];
+        $this->profilePostSubmit($uf_group_id, $contact_id);
+      }
       $this->exitSuccess($result['values']);
     }
     catch (Exception $e) {
@@ -164,6 +173,21 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     }
     else {
       throw new CiviCRM_API3_Exception("That entity is not allowed.");
+    }
+  }
+
+  function profilePostSubmit($uf_group_id, $contact_id) {
+    // Get full info about this profile.
+    $group = civicrm_api3('UFGroup', 'getsingle', array('id' => $uf_group_id));
+
+    if (isset($group['add_to_group_id'])) {
+      $method = 'Web';
+      CRM_Contact_BAO_GroupContact::addContactsToGroup(array($contact_id), $group['add_to_group_id'], $method);
+    }
+    if (isset($group['notify'])) {
+      $val = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues($uf_group_id, $contact_id, NULL);
+      CRM_Core_BAO_UFGroup::commonSendMail($contact_id, $val);
+
     }
   }
 }
