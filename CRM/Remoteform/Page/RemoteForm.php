@@ -177,17 +177,25 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
   }
 
   function profilePostSubmit($uf_group_id, $contact_id) {
-    // Get full info about this profile.
-    $group = civicrm_api3('UFGroup', 'getsingle', array('id' => $uf_group_id));
-
-    if (isset($group['add_to_group_id'])) {
+    // See: https://github.com/civicrm/civicrm-core/pull/13410/
+    // This following code executes what is included in the pull request.  When
+    // the pull request is merged into CiviCRM, we will need to detect whether
+    // or not to run the following code based on the version of CiviCRM in
+    // which the code is merged.
+    
+    // Get notify and add to group for this profile.
+    $profile_actions_params = array(
+      'id' => $profileID,
+      'return' => array('add_to_group_id', 'notify'),
+    );
+    $profile_actions = civicrm_api3('UFGroup', 'getsingle', $profile_actions_params);
+    if (isset($profile_actions['add_to_group_id'])) {
       $method = 'Web';
-      CRM_Contact_BAO_GroupContact::addContactsToGroup(array($contact_id), $group['add_to_group_id'], $method);
+      CRM_Contact_BAO_GroupContact::addContactsToGroup(array($contact_id), $profile_actions['add_to_group_id'], $method);
     }
-    if (isset($group['notify'])) {
-      $val = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues($uf_group_id, $contact_id, NULL);
+    if (isset($profile_actions['notify'])) {
+      $val = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues($profileID, $contact_id, NULL);
       CRM_Core_BAO_UFGroup::commonSendMail($contact_id, $val);
-
     }
   }
 }
