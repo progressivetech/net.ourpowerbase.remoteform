@@ -260,7 +260,7 @@ function remoteform_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Contribute_Form_ContributionPage_Settings') {
     // This form is called once as part of the regular page load and again via an ajax snippet.
     // We only want the new fields loaded once - so limit ourselves to the ajax snippet load.
-    if (CRM_Utils_Request::retrieve('snippet', 'String', $this) == 'json') {
+    if (CRM_Utils_Request::retrieve('snippet', 'String', $form) == 'json') {
       $id = intval($form->getVar('_id'));
       $code = remoteform_get_displayable_code($id, 'ContributionPage');
       remoteform_add_enable_field($form, 'contribution_page', E::ts('Allow remote submissions to this contribution page.'), $code);
