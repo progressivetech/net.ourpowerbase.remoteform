@@ -590,7 +590,6 @@ function remoteForm(config) {
                 if (options[i].hasAttribute('data-is-other-amount')) {
                   // Get the total from the Other_Amount field.
                   amount = parseFloat(document.getElementById('Other_Amount').value);
-                  console.log("Amount is now ", amount);
                 }
                 else if (options[i].hasAttribute('data-amount')) {
                   amount = parseFloat(options[i].getAttribute('data-amount'));
@@ -819,6 +818,9 @@ function remoteForm(config) {
     }
     if (type == 'select date') {
       type = 'date';
+    }
+    if (type == 'chainselect') {
+      type = 'select';
     }
     return type;
   }
@@ -1124,6 +1126,109 @@ function remoteForm(config) {
     return collectionDiv;
   }
 
+  /**
+   * Populate a location drop down with the appropriate values.
+   *
+   * We dynamically populate the state/province, county and country
+   * drop down lists by querying CiviCRM for the appropriate values.
+   *
+   * In the case of state province, the right values will depend on the
+   * chosen country. In the case of county, the right values will depend
+   * on the chosen state.
+   **/
+  function populateLocationOptions(loc, chosen = null, selectInput = null) {
+    // Try to find the right chosen field. 
+    if (chosen === null) {
+      if (loc == 'state_province') {
+        var country_elems = document.getElementsByClassName('remoteform-country');
+        if (country_elems[0]) {
+          // If there is more than one country field, we take the first.
+          chosen = country_elems[0].value;
+        }
+      }
+    }
+
+    if (selectInput === null) {
+      // Find the selectInput element to populate.
+      var elementId = 'remoteform-' + loc;
+      var target_elems = document.getElementsByClassName(elementId);
+      if (target_elems[0]) {
+        // If there is more than one, we take the first.
+        selectInput = target_elems[0];
+      }
+      else {
+        console.log("Could not find the target element.");
+        return;
+      }
+    }
+
+    var action = null;
+    var key_field = null;
+    var params = {};
+    var args = {
+      params: {}
+    }
+
+    if (loc == 'state-province') {
+      action = 'Stateprovincesforcountry';
+      key_field = 'country_id';
+      args['params']['country_id'] = chosen;
+    }
+    else if (loc == 'country') {
+      action = 'Countries';
+    }
+    args['action'] = action;
+    args['entity'] = 'RemoteForm';
+
+    post(cfg.url, args, function(data) {
+      var optionEl;
+      // Purge existing options.
+      selectInput.innerHTML = '';
+      if (cfg.displayLabels == false) {
+        // If we are not showing labels, then create an initial option with
+        // no value that displays the label in the drop down.
+        optionEl = document.createElement('option');
+        optionEl.value = '';
+        optionEl.innerHTML = '-- select --';
+        selectInput.appendChild(optionEl);
+      }
+      Object.keys(data['values']).forEach(function(key) {
+        value = data['values'][key];
+        optionEl = document.createElement('option');
+        optionEl.value = key;
+        optionEl.innerHTML = value;
+        selectInput.appendChild(optionEl);
+      });
+    });
+  }
+
+  // Country, state, and county fields are related - given the country,
+  // we want to show the right states, given the state, we want to show
+  // the right counties. This function handles the logic of setting the
+  // proper callback functions and querying the civicrm database to 
+  // get the correct option lists depending on other values on the form.
+  function handleLocationOptions(selectInput, def) {
+    var loc;
+    // Add special classes so we can be sure to find these elements later
+    // using getElementsByClass.
+    if (def.name == 'country_id') {
+      // We need to add a callback.
+      selectInput.addEventListener('change', function() {
+        populateLocationOptions('state-province', this.value);
+     });
+     loc = 'country';
+    }
+    else if (def.name == 'county_id') {
+      selectInput.className += ' remoteform-county';
+    }
+    else if (def.name == 'state_province_id') {
+      selectInput.className += ' remoteform-state-province';
+      loc = 'state-province';
+    }
+    
+    populateLocationOptions(loc, null, selectInput);
+  }
+
   function createSelect(key, def) {
     // Create the select element.
     var selectInput = document.createElement('select');
@@ -1133,22 +1238,26 @@ function remoteForm(config) {
     }
     selectInput.className = cfg.css.select;
 
-    var optionEl;
-    if (cfg.displayLabels == false) {
-      // If we are not showing labels, then create an initial option with
-      // no value that displays the label in the drop down.
-      optionEl = document.createElement('option');
-      optionEl.value = '';
-      optionEl.innerHTML = '--' + def.title + '--';
-      selectInput.appendChild(optionEl);
+    if (def.name == 'country_id' || def.name == 'county_id' || def.name == 'state_province_id' ) {
+      handleLocationOptions(selectInput, def);
     }
-    for (var option in def.options) {
-      if (def.options.hasOwnProperty(option)) {
-        var optionDef = def.options[option];
+    else {
+      if (cfg.displayLabels == false) {
+        // If we are not showing labels, then create an initial option with
+        // no value that displays the label in the drop down.
         optionEl = document.createElement('option');
-        optionEl.value = option;
-        optionEl.innerHTML = def.options[option];
+        optionEl.value = '';
+        optionEl.innerHTML = '--' + def.title + '--';
         selectInput.appendChild(optionEl);
+      }
+      for (var option in def.options) {
+        if (def.options.hasOwnProperty(option)) {
+          var optionDef = def.options[option];
+          optionEl = document.createElement('option');
+          optionEl.value = option;
+          optionEl.innerHTML = def.options[option];
+          selectInput.appendChild(optionEl);
+        }
       }
     }
     return selectInput;

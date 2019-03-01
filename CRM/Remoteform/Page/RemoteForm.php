@@ -171,8 +171,28 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         throw new CiviCRM_API3_Exception("That action is not allowed.");
       }
     }
+    else if ($entity == 'RemoteForm') {
+      if ($action == 'Stateprovincesforcountry') {
+        $params['country_id'] = isset($input_params['country_id']) ? intval($input_params['country_id']) : NULL;
+        return array(
+          'entity' => 'RemoteForm',
+          'action' => 'Stateprovincesforcountry',
+          'params' => $params,
+        );
+      }
+      if ($action == 'Countries') {
+        return array(
+          'entity' => 'RemoteForm',
+          'action' => 'Countries',
+          'params' => array(),
+        );
+      }
+      else {
+        throw new CiviCRM_API3_Exception("That action is not allowed.");
+      }
+    }
     else {
-      throw new CiviCRM_API3_Exception("That entity is not allowed.");
+      throw new CiviCRM_API3_Exception("That entity is not allowed: $entity.");
     }
   }
 
