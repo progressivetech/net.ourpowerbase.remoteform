@@ -87,16 +87,12 @@ function _rf_add_profile_fields($id, &$params) {
   require_once('api/v3/Profile.php');
   foreach($result['values'] as $value) {
     $uf_group_id = $value['uf_group_id'];
-    // FIXME - it would be nice to simply call civicrm_api3('Profile',
-    // 'getfields', array('api_action' => 'submit', 'profile_id =>
-    // $uf_group_id, 'get_options' => 'all')) but alas, that doesn't work
-    // because we will never get states or countries returned since
-    // $optionBehavior is always set to 1 and we need it to be set to 2 to get
-    // "aggressive" populating of state and country drop down.
-    $is_flush = TRUE;
-    $optionsBehavior = 2;
-    $uf_result = _civicrm_api3_buildprofile_submitfields($uf_group_id, $optionsBehavior, $is_flush);
-    foreach($uf_result as $field_name => $field) {
+    $uf_result = civicrm_api3('Profile', 'getfields', array(
+      'api_action' => 'submit',
+      'profile_id' => $uf_group_id,
+      'get_options' => 'all'
+    ));
+    foreach($uf_result['values'] as $field_name => $field) {
       $params[$field_name] = $field;
     }
   }
