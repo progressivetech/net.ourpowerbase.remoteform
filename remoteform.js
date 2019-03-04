@@ -152,16 +152,16 @@ function remoteForm(config) {
    * ### cfg.initTxt
    *
    * If cfg.autoInit is false, the text displayed on the button to click
-   * for the user to display the form. Default: Join our mailing list.
+   * for the user to display the form. Default: Fill in the form.
    */
-  cfg.initTxt = config.initTxt || 'Join our mailing list';
+  cfg.initTxt = config.initTxt || 'Fill in the form';
 
   /** 
    * ### cfg.submitTxt
    *
-   * The text to display on the form's submit button. Default: Join.
+   * The text to display on the form's submit button. Default: Submit.
    */
-  cfg.submitTxt = config.submitTxt || 'Join';
+  cfg.submitTxt = config.submitTxt || 'Submit';
 
   /** 
    * ### cfg.cancelTxt
