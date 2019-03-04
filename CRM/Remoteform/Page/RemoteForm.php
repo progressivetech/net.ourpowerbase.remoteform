@@ -205,7 +205,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     
     // Get notify and add to group for this profile.
     $profile_actions_params = array(
-      'id' => $profileID,
+      'id' => $uf_group_id,
       'return' => array('add_to_group_id', 'notify'),
     );
     $profile_actions = civicrm_api3('UFGroup', 'getsingle', $profile_actions_params);
@@ -214,7 +214,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       CRM_Contact_BAO_GroupContact::addContactsToGroup(array($contact_id), $profile_actions['add_to_group_id'], $method);
     }
     if (isset($profile_actions['notify'])) {
-      $val = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues($profileID, $contact_id, NULL);
+      $val = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues($uf_group_id, $contact_id, NULL);
       CRM_Core_BAO_UFGroup::commonSendMail($contact_id, $val);
     }
   }
