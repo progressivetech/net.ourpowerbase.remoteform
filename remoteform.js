@@ -1169,13 +1169,16 @@ function remoteForm(config) {
       params: {}
     }
 
+    var label = null;
     if (loc == 'state-province') {
       action = 'Stateprovincesforcountry';
       key_field = 'country_id';
       args['params']['country_id'] = chosen;
+      label = 'State';
     }
     else if (loc == 'country') {
       action = 'Countries';
+      label = 'Country';
     }
     args['action'] = action;
     args['entity'] = 'RemoteForm';
@@ -1189,7 +1192,7 @@ function remoteForm(config) {
         // no value that displays the label in the drop down.
         optionEl = document.createElement('option');
         optionEl.value = '';
-        optionEl.innerHTML = '-- select --';
+        optionEl.innerHTML = '-- select ' + label + ' --';
         selectInput.appendChild(optionEl);
       }
       Object.keys(data['values']).forEach(function(key) {
