@@ -175,9 +175,10 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $absolute = TRUE;
   $fragment = NULL;
   $frontend = TRUE;
+  $htmlize = TRUE;
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
   $css_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.css');
-  $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute, $fragment, $frontend);
+  $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute, $fragment, $htmlize, $frontend);
   $base_url = parse_url(CIVICRM_UF_BASEURL, PHP_URL_HOST);
 
   $extra_js_urls = NULL;
@@ -205,7 +206,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
         $extra_js_urls .
       htmlentities('<script> var remoteFormConfig = { ') . '<br />' .
-      htmlentities(' url: "' . $post_url . '",') . '<br>' .
+      htmlentities(' url: "') . $post_url . '",' . '<br>' .
       htmlentities(' id: ' . $id . ',') . '<br/>' .
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
         $extra_js_params .
