@@ -15,6 +15,42 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
 
     try {
       // CRM_Core_Error::debug_var('data', $data);
+      // Special exception to check for dupes.
+      if (strtolower($data['entity']) == 'profile' && strtolower($data['action']) == 'submit') {
+        $checkPerms = FALSE;
+        $excludedContactIds = [];
+        $dupes = CRM_Contact_BAO_Contact::getDuplicateContacts($data['params'], 'Individual', 'Unsupervised', $excludedContactIds, $checkPerms);
+        $num = count($dupes);
+        if ($num > 1) {
+          // We have 1 or more dupes. We better do something.
+          // First, let's see what the policy is for this profile.
+          // 0 means issue warning and do not update, 1 means update the dupe, 2 means create dupe.
+          $is_update_dupe = civicrm_api3('UFGroup', 'getvalue', [ 'return' => "is_update_dupe", 'id' => $data['params']['profile_id'] ]);
+
+          if ($is_update_dupe == '0') {
+            throw new CiviCRM_API3_Exception(E::ts("You are already in the database! Congrats."));
+          }
+          elseif ($is_update_dupe == 1) {
+            if ($num == 1) {
+              // Just one. Ok, this must be the same contact. Update our params
+              // to include the dupe contact id and we should be good.
+              $data['params']['contact_id'] = array_pop($dupes);
+            }
+            else {
+              // More than one dupe. Now what? In keeping with what happens when
+              // you fill out a profile, we simply pick off the first one.
+              $data['params']['contact_id'] = array_shift($dupes);
+            }
+          }
+          elseif ($is_update_dupe == 2) {
+            // No op. We don't have to do anything to create the dupe.
+          }
+          else {
+            // Error
+            throw new CiviCRM_API3_Exception(E::ts("Your profile has a mis-configured setting for duplicate handling."));
+          }
+        }
+      }
       $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
       // Special exception - The API profile submit function doesn't add
       // contacts to a group or send email notification, even if the profile
@@ -79,7 +115,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     // Ensure the user is not logged in. If we allowed logged in users
     // then we are at risk of a CSRF attack.
     if (CRM_Utils_System::isUserLoggedIn()) {
-      throw new CiviCRM_API3_Exception('You cannot use JSSubmit while logged into CiviCRM.');
+      throw new CiviCRM_API3_Exception(E::ts('You cannot use JSSubmit while logged into CiviCRM.'));
     }
 
     $entity = $input->entity;
@@ -88,7 +124,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     if ($entity == 'Profile') {
       // Ensure this site allows access to profiles.
       if (!CRM_Core_Permission::check('profile create')) {
-        throw new CiviCRM_API3_Exception("You don't have permission to create contacts via profiles.");
+        throw new CiviCRM_API3_Exception(E::ts("You don't have permission to create contacts via profiles."));
       }
 
       // Let's see if this particular profile is allowed.
@@ -96,7 +132,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       $id = intval($input_params['profile_id']);
       $enabled = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_profile'));
       if (!in_array($id, $enabled)) {
-        throw new CiviCRM_API3_Exception("This profile is not configured to accept remote form submissions.");
+        throw new CiviCRM_API3_Exception(E::ts("This profile is not configured to accept remote form submissions."));
       }
 
       if ($action == 'getfields') {
@@ -122,20 +158,20 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         );
       }
       else {
-        throw new CiviCRM_API3_Exception("That action is not allowed.");
+        throw new CiviCRM_API3_Exception(E::ts("That action is not allowed."));
       }
     }
     else if ($entity == 'RemoteFormContributionPage') {
       // Ensure this site allows access to contributions.
       if (!CRM_Core_Permission::check('make online contributions')) {
-        throw new CiviCRM_API3_Exception("You don't have permission to create contributions.");
+        throw new CiviCRM_API3_Exception(E::ts("You don't have permission to create contributions."));
       }
 
       // Make sure this contribution page is configured to accept remote submissions.
       $id = intval($input_params['contribution_page_id']);
       $enabled = civicrm_api3('Setting', 'getvalue', array('name' => 'remoteform_enabled_contribution_page'));
       if (!in_array($id, $enabled)) {
-        throw new CiviCRM_API3_Exception("This contribution page is not configured to accept remote form submissions.");
+        throw new CiviCRM_API3_Exception(E::ts("This contribution page is not configured to accept remote form submissions."));
       }
       if ($action == 'getfields') {
         // Sanitize input parameters.
@@ -168,7 +204,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         );
       }
       else {
-        throw new CiviCRM_API3_Exception("That action is not allowed.");
+        throw new CiviCRM_API3_Exception(E::ts("That action is not allowed."));
       }
     }
     else if ($entity == 'RemoteForm') {
@@ -188,11 +224,11 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         );
       }
       else {
-        throw new CiviCRM_API3_Exception("That action is not allowed.");
+        throw new CiviCRM_API3_Exception(E::ts("That action is not allowed."));
       }
     }
     else {
-      throw new CiviCRM_API3_Exception("That entity is not allowed: $entity.");
+      throw new CiviCRM_API3_Exception(E::ts("That entity is not allowed: $entity."));
     }
   }
 
