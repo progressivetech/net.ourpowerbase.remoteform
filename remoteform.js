@@ -631,7 +631,10 @@ function remoteForm(config) {
     while (form.firstChild) {
       form.removeChild(form.firstChild);
     }
-    form.parentElement.removeChild(form);
+    if (form.parentElement) {
+      console.log("I'm doing it");
+      form.parentElement.removeChild(form);
+    }
     userMsg(msg, 'success');
   }
 
