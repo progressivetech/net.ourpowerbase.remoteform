@@ -21,7 +21,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         $excludedContactIds = [];
         $dupes = CRM_Contact_BAO_Contact::getDuplicateContacts($data['params'], 'Individual', 'Unsupervised', $excludedContactIds, $checkPerms);
         $num = count($dupes);
-        if ($num > 1) {
+        if ($num > 0) {
           // We have 1 or more dupes. We better do something.
           // First, let's see what the policy is for this profile.
           // 0 means issue warning and do not update, 1 means update the dupe, 2 means create dupe.

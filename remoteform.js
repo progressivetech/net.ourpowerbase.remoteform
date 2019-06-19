@@ -710,6 +710,7 @@ function remoteForm(config) {
     // is triggered on submission of a form.
     form.addEventListener('submit', function(event) {
       event.preventDefault();
+      event.stopImmediatePropagation();
       submitData(fields);
     });
   }
