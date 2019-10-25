@@ -37,8 +37,5 @@ function remoteformstripe_extra_js_params($id) {
 }
 
 function remoteformstripe_get_public_key($ppid) {
-  return civicrm_api3('PaymentProcessor', 'getvalue', array(
-    'id' => $ppid,
-    'return' => 'password'
-  ));
+  return CRM_Core_Payment_Stripe::getPublicKeyById($ppid);
 }

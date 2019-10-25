@@ -1,5 +1,25 @@
 # Remoteform 
 
+-----
+
+NOTE: a security patch was applied to remoteform on October 25, 2019. All users
+are encouraged to upgrade. 
+
+The security vulnerability fixed applies to sites that meet all of these
+criteria:
+
+ * You were using remote form to create a contribution page AND
+ * Your contribution page is using Stripe AND
+ * The version of stripe in use is version 6.0 or higher.
+
+If these criteria apply to you, your Stripe secret key may have been exposed
+and you should generate a new one.
+
+NOTE: remoteform now requires Stripe version 5.4 (if you are using Stripe for
+contribution pages).
+
+-----
+
 Remoteform allows you to add a CiviCRM form to a remote web site via a few
 lines of javascript code.
 
