@@ -1,6 +1,8 @@
 <?php
 use CRM_Remoteform_ExtensionUtil as E;
 
+require_once('api/Exception.php');
+require_once('api/v3/utils.php');
 class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
 
   public function run() {
