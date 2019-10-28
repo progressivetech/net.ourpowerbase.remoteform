@@ -24,7 +24,7 @@ If you are using Drupal 7, install the [cors
 module](https://www.drupal.org/project/cors) and add your web site URLs on the
 configuration page:
 
-![](images/drupal7-cors.png)
+![](../images/drupal7-cors.png)
 
 ## Drupal 8
 
