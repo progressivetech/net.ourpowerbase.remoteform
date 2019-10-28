@@ -4,7 +4,6 @@ use CRM_Remoteform_ExtensionUtil as E;
 class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
 
   public function run() {
-    $this->printCorsHeaders();
 		$data = json_decode(stripslashes(file_get_contents("php://input")));
     try {
       $data = $this->sanitizeInput($data);
@@ -74,38 +73,6 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
 
   function exitSuccess($data) {
     CRM_Utils_JSON::output(civicrm_api3_create_success($data));
-  }
-
-  function printCorsHeaders() {
-    // Allow from any origin
-    if (isset($_SERVER['HTTP_ORIGIN'])) {
-      // CRM_Core_Error::debug_var('_SERVER', $_SERVER);
-      $urls = explode("\n", civicrm_api3('setting', 'getvalue', array('name' => 'remoteform_cors_urls')));
-      foreach($urls as $url) {
-        // Who knows what kind of spaces and line return nonesense we may have.
-        // This regex should kill all the Control Characters (see
-        // https://en.wikipedia.org/wiki/Control_character
-        $url = preg_replace('/[\x00-\x1F\x7F]/', '', trim($url));
-        if ($_SERVER['HTTP_ORIGIN'] == $url) {
-          header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-          header('Access-Control-Allow-Credentials: true');
-          header('Access-Control-Max-Age: 86400');    // cache for 1 day
-          continue;
-        }
-      }
-    }
-
-    // Access-Control headers are received during OPTIONS requests
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-      if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
-        // may also be using PUT, PATCH, HEAD etc
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
-      }
-      if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
-        header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
-      }
-      CRM_Utils_System::civiExit();
-    }
   }
 
   /**
