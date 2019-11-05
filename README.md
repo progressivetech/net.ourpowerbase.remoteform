@@ -15,21 +15,8 @@ criteria:
 If these criteria apply to you, your Stripe secret key may have been exposed
 and you should generate a new one.
 
------
-
-## Requirements:
-
- * You must configure your CiviCRM database to allow your web site the special
-   access needed to process remoteform requests. This kind of access is called
-   [cors](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing), aka
-   "Cross site resource sharing." Unfortunately, a CiviCRM extension can't
-   reliably do that, so you must manage your own CORS settings. If you are
-   running Drupal 7, you can do that via the [cors module](https://www.drupal.org/project/cors); for Drupal 8 it is built into
-   core; for WordPress, the [wp-cors plugin](https://wordpress.org/plugins/wp-cors/). If you are running Joomla
-   or you don't want to use those plugins, you will have to add cors support
-   manually (see the [cors docs](docs/cors.md) for more details).
-
- * If you are using Stripe for your contribution pages, then you must be using Stripe version 5.4 or later 
+NOTE: remoteform now requires Stripe version 5.4 (if you are using Stripe for
+contribution pages).
 
 -----
 
@@ -43,11 +30,14 @@ petitions are in the works).
 
 Full [documentation is available](docs/index.md). See below for an overview.
 
-First, enable the extension.
+First, click `Adminstration -> Customize data and screens -> Remote Forms.`
 
-Second, [enable your CiviCRM database to permit requests](docs/cors.md) from your web site. See the [docs](docs/cors.md) for more information on how to do that for your content management system.
+Enter your web site's address. Only the addresses listed here will be able to
+submit forms to your CiviCRM instance.
 
-Third, edit the profile or contribution page to enable remoteform. Here's an
+![Choose URLs to allow](/images/cors-configuration.png)
+
+Second, edit the profile or contribution page to enable remoteform. Here's an
 example of a profile page (look in `Profile Settings -> Advanced Settings`):
 
 ![Enable remoteform for a contribution](/images/profile-enable.png)
