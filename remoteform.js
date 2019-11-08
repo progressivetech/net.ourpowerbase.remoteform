@@ -219,6 +219,19 @@ function remoteForm(config) {
   cfg.customSubmitDataFunc = config.customSubmitDataFunc || null;
 
   /**
+   * ### cfg.customInitFunc
+   *
+   * Trigger javascript code to run after the form is built.
+   *
+   * If you define this function, it should accept one argument.
+   *
+   * id: The html element id of the enclosing div. 
+   *
+   * See remoteform.stripe.js for an example.
+   */
+  cfg.customInitFunc = config.customInitFunc || null;
+
+  /**
    * ### cfg.customSubmitDataParams
    *
    * An object containing any data that is specific to your customSubmitDataFunc,
@@ -452,6 +465,9 @@ function remoteForm(config) {
       buildForm(data['values']);
       // Hide the init button.
       initButton.style.display = 'none';
+      if (cfg.customInitFunc) {
+        cfg.customInitFunc(cfg);
+      }
     }
     else {
       friendlyErr("Failed to validate fields. You may be trying to use an entity that is too complicated for me.");
@@ -701,6 +717,7 @@ function remoteForm(config) {
 
     var submitDiv = document.createElement('div');
     submitDiv.className = cfg.css.inputDiv;
+    submitDiv.id = 'remoteform-submit';
     submitDiv.appendChild(submitButton);
     submitDiv.appendChild(cancelButton);
     form.appendChild(submitDiv);

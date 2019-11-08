@@ -229,6 +229,22 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         throw new CiviCRM_API3_Exception(E::ts("That action is not allowed."));
       }
     }
+    else if ($entity == 'paymentIntent') {
+      if ($action != 'generate') {
+        throw new CiviCRM_API3_Exception(E::ts("That action is not allowed."));
+      }
+      $params = array(
+        'payment_method_id' => $input_params['payment_method_id'],
+        'amount' => intval($input_params['amount']),
+        'id' => $input_params['id'],
+        'description' => $input_params['description']
+      ); 
+      return array(
+        'entity' => 'paymentIntent',
+        'action' => 'generate',
+        'params' => $params,
+      );
+    }
     else {
       throw new CiviCRM_API3_Exception(E::ts("That entity is not allowed: $entity."));
     }

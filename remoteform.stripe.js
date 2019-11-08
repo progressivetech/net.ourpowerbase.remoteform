@@ -15,46 +15,83 @@
  *   configuraiton items specific to this payment processor.
  */
 
-function initStripe(params, post, cfg) {
-  // Stripe related options.
-  apiKey = cfg.apiKey || null;
-  checkoutLogoUrl = cfg.checkoutLogoUrl || 'https://stripe.com/img/documentation/checkout/marketplace.png';
-  checkoutName = cfg.checkoutName || 'Please support us';
-  checkoutDescription = cfg.checkoutDescription || 'Donation';
-  requireZipCode = cfg.requireZipCode || false; 
 
-  var handler = StripeCheckout.configure({
-    key: apiKey,
-    image: checkoutLogoUrl,
-    locale: 'auto',
-    token: function(token) {
+// These variables are needed globally.
+var stripe_card;
+var stripe;
+
+function initStripe(cfg) {
+  // Create a div to hold the credit card fields.
+  ccDiv = document.createElement('div');
+  ccDiv.id = 'card-element';
+
+  // We want to insert the credit card fields before the submit buttons.
+  referenceEl = document.getElementById('remoteform-submit');
+  document.getElementById('remoteForm-form-' + cfg.entity + cfg.id).insertBefore(ccDiv, referenceEl );
+
+  // Now ask Stripe to insert their janky iframe.
+  stripe = Stripe(cfg.customSubmitDataParams.apiKey);
+  var elements = stripe.elements();
+  stripe_card = elements.create('card');
+  stripe_card.mount('#card-element');
+}
+
+
+function submitStripe(params, post, cfg) {
+  stripe.createPaymentMethod('card', stripe_card).then(function (result) {
+    if (result.error) {
+      // Show error in payment form
+      console.log("Problems!", result);
+    }
+    else {
+      var params = {
+        payment_method_id: result.paymentMethod.id,
+        amount: getTotalAmount(),
+        currency: CRM.vars.stripe.currency,
+        id: CRM.vars.stripe.id,
+        description: document.title,
+      };
+      var args = {
+        entity: 'paymentIntent',
+        action: 'generate',
+        params: params,
+      }
+      // Send paymentMethod.id to server
+      post(args, handleServerResponse);
+    }
+
+    function handleServerResponse(result) {
+      console.log('handleServerResponse');
+      if (result.error) {
+        // Show error from server on payment form
+        console.log(result);
+      } else if (result.requires_action) {
+        // Use Stripe.js to handle required card action
+        handleAction(result);
+      } else {
+        // All good, we can submit the form
+        successHandler('paymentIntentID', result.paymentIntent);
+      }
+    }
+
+    function handleAction(response) {
+      stripe.handleCardAction(response.payment_intent_client_secret)
+        .then(function(result) {
+          if (result.error) {
+            // Show error in payment form
+            console.log(result);
+          } else {
+            // The card action has been handled
+            // The PaymentIntent can be confirmed again on the server
+            successHandler('paymentIntentID', result.paymentIntent);
+          }
+        });
+    }
+
+    funciton successHandler(type, object ) {
       params['params']['stripe_token'] = token.id;
+      params['params'][type] = object.id;
       post(params);
     }
   });
-
-  // Look for a field that looks like an email field so we don't make
-  // the user fill in their email address twice.
-  var email = null;
-  for (var field_name in params['params']) {
-    if (field_name.search('email') != -1) {
-      email = params['params'][field_name];
-      break;
-    }
-  }
-
-  // Open Checkout with further options:
-  handler.open({
-    name: checkoutName,
-    description: checkoutDescription,
-    zipCode: requireZipCode,
-    email: email,
-    amount: params['params']['amount'] * 100
-  });
-
-  // Close Checkout on page navigation:
-  window.addEventListener('popstate', function() {
-    handler.close();
-  });
 }
-

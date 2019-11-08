@@ -7,14 +7,15 @@
 
 
 // Whether or not credit card fields should be included in the form
-// sent back to the browser. With Stripe, we draw our widget that
-// asks for the user to enter their credit card info, so we don't
-// want to include those fields in the CiviCRM generated form.
+// sent back to the browser. With STRIPE we no longer use the widget
+// so we needs these fields displayed. Return TRUE to include the 
+// standard CiviCRM cc fields, FALSE to include nothing, or a string
+// to include what is returned.
 function remoteformstripe_include_cc_fields_in_form() {
-  return FALSE;
+  return FALSE; 
 }
 
-function remoteformstripe_extra_js_urls($id) {
+function remoteformstripe_extra_js_urls() {
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.stripe.js');
   return htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
     htmlentities('<script src="https://checkout.stripe.com/checkout.js"></script>') . '<br />';
