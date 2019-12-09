@@ -44,6 +44,11 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
    * @throws CiviCRM_API3_Exception
    */
   public static function submit($params) {
+    # Added by remoteform:
+    if (array_key_exists('email-primary', $params)) {
+      # For some reason, the email is not created without the capitalization.
+      $params['email-Primary'] = $params['email-primary'];
+    }
     $form = new CRM_Contribute_Form_Contribution_Confirm();
     $form->_id = $params['id'];
 
