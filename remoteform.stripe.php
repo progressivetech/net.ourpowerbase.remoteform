@@ -37,5 +37,5 @@ function remoteformstripe_extra_js_params($id) {
 }
 
 function remoteformstripe_get_public_key($ppid) {
-  return CRM_Core_Payment_Stripe::getPublishableKeyById($ppid);
+  return CRM_Core_Payment_Stripe::getPublishableKey($ppid);
 }
