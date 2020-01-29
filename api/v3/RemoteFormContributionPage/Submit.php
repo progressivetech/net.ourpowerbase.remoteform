@@ -16,9 +16,17 @@ function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apir
     _rf_add_page_details($contribution_page_id, $params, $test_mode);
     _rf_add_profile_fields($contribution_page_id, $params);
     _rf_add_price_fields($contribution_page_id, $params, $params['control']['currency']);
-    // Omit credit card fields for Stripe (and any other javascript based payment processor).
-    if (_rf_include_credit_card_fields($contribution_page_id)) {
+    // How do we handle credit card fields? Some processors may want to insert their
+    // own. 
+    $cc_fields = _rf_include_credit_card_fields($contribution_page_id);
+    if ($cc_fields === TRUE) {
       _rf_add_credit_card_fields($params);     
+    }
+    elseif ($cc_fields == FALSE) {
+      // pass
+    }
+    else {
+      $params = array_merge($params, $cc_fields);
     }
   }
   $params['contribution_page_id']['api.required'] = TRUE;

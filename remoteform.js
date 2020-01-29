@@ -238,7 +238,6 @@ function remoteForm(config) {
    * such as an api key, etc.
    */
   cfg.customSubmitDataParams = config.customSubmitDataParams || {};
-
   if (!config.css) {
     config.css = {};
   }
@@ -451,7 +450,7 @@ function remoteForm(config) {
     };
 
     // Once we get a response, send the response to processGetFieldsResponse.
-    post(cfg.url, args, processGetFieldsResponse);
+    post(args, processGetFieldsResponse);
   }
 
   // Validate the response we get, then pass the validated fields to the
@@ -502,15 +501,16 @@ function remoteForm(config) {
   function submitData(fields) {
     var params = processSubmitData(fields);
     if (cfg.customSubmitDataFunc) {
-      cfg.customSubmitDataFunc(params, submitDataPost, cfg.customSubmitDataParams);
+      cfg.customSubmitDataFunc(params, submitDataPost, cfg.customSubmitDataParams, post);
     }
     else {
       submitDataPost(params);
     }
   }
 
-  function submitDataPost(params) {
-    post(cfg.url, params, processSubmitDataResponse);
+  function submitDataPost(params, ) {
+    console.log("Here we go!", params);
+    post(params, processSubmitDataResponse);
   }
 
   // Take what the user submitted, and parse it into a more easily usable
@@ -545,6 +545,9 @@ function remoteForm(config) {
       }
     }
     for (var key in fields) {
+      if (key.startsWith('placeholder_')) {
+        continue;
+      }
       if (fields.hasOwnProperty(key)) {
         var def = fields[key];
         if (!def.entity) {
@@ -654,7 +657,7 @@ function remoteForm(config) {
   }
 
   // Post data to the CiviCRM server.
-  function post(url, params, onSuccess = console.log, onError = friendlyErr) {
+  function post(params, onSuccess = console.log, onError = friendlyErr, url = cfg.url) {
     var request = new XMLHttpRequest();
     request.open('POST', url, true);
     request.onreadystatechange = function() {
@@ -1203,7 +1206,7 @@ function remoteForm(config) {
     args['action'] = action;
     args['entity'] = 'RemoteForm';
 
-    post(cfg.url, args, function(data) {
+    post(args, function(data) {
       var optionEl;
       // Purge existing options.
       selectInput.innerHTML = '';

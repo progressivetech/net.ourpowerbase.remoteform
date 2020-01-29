@@ -4,7 +4,13 @@
  */
 
 /** 
+ *
  * initStripe
+ *
+ * This function is called after the form is created. It allows you to add
+ * additional elements to it.
+ *
+ * submitStripe
  *
  * This function is called after the user chooses the amount to pay and has
  * filled out the profile.
@@ -25,52 +31,29 @@ function initStripe(cfg) {
   ccDiv = document.createElement('div');
   ccDiv.id = 'card-element';
 
-  // We want to insert the credit card fields before the submit buttons.
-  referenceEl = document.getElementById('remoteform-submit');
-  document.getElementById('remoteForm-form-' + cfg.entity + cfg.id).insertBefore(ccDiv, referenceEl );
-
   // Now ask Stripe to insert their janky iframe.
   stripe = Stripe(cfg.customSubmitDataParams.apiKey);
   var elements = stripe.elements();
   stripe_card = elements.create('card');
-  stripe_card.mount('#card-element');
+  target = document.getElementById("placeholder_stripe_cc_field").parentElement;
+  stripe_card.mount(target);
 }
 
 
-function submitStripe(params, post, cfg) {
+function submitStripe(params, finalSubmitDataFunc, cfg, remoteformPostFunc) {
+  console.log("cfg start", cfg);
   stripe.createPaymentMethod('card', stripe_card).then(function (result) {
-    if (result.error) {
-      // Show error in payment form
-      console.log("Problems!", result);
-    }
-    else {
-      var params = {
-        payment_method_id: result.paymentMethod.id,
-        amount: getTotalAmount(),
-        currency: CRM.vars.stripe.currency,
-        id: CRM.vars.stripe.id,
-        description: document.title,
-      };
-      var args = {
-        entity: 'paymentIntent',
-        action: 'generate',
-        params: params,
-      }
-      // Send paymentMethod.id to server
-      post(args, handleServerResponse);
-    }
-
     function handleServerResponse(result) {
-      console.log('handleServerResponse');
-      if (result.error) {
+      console.log('handleServerResponse', result);
+      if (result.is_error) {
         // Show error from server on payment form
-        console.log(result);
-      } else if (result.requires_action) {
+        console.log("Error: ", result);
+      } else if (result.values.requires_action) {
         // Use Stripe.js to handle required card action
-        handleAction(result);
+        handleAction(result.values);
       } else {
         // All good, we can submit the form
-        successHandler('paymentIntentID', result.paymentIntent);
+        successHandler('paymentIntentID', result.values.paymentIntent);
       }
     }
 
@@ -87,11 +70,32 @@ function submitStripe(params, post, cfg) {
           }
         });
     }
-
-    funciton successHandler(type, object ) {
-      params['params']['stripe_token'] = token.id;
+    
+    function successHandler(type, object ) {
       params['params'][type] = object.id;
-      post(params);
+      console.log("Final post", params);
+      finalSubmitDataFunc(params);
+    }
+
+    if (result.error) {
+      // Show error in payment form
+      console.log("Problems!", result);
+    }
+    else {
+      var post_params = {
+        payment_method_id: result.paymentMethod.id,
+        amount: params['params']['amount'],
+        currency: 'USD',
+        payment_processor_id: params['params']['payment_processor_id'],
+        description: document.title,
+      };
+      var args = {
+        entity: 'paymentIntent',
+        action: 'generate',
+        params: post_params,
+      }
+      // Send paymentMethod.id to powerbase server
+      remoteformPostFunc(args, handleServerResponse);
     }
   });
 }
