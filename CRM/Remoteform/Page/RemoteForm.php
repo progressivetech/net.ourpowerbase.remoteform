@@ -240,8 +240,8 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         'description' => $input_params['description']
       ); 
       return array(
-        'entity' => 'Stripe',
-        'action' => 'ProcessPaymentIntent',
+        'entity' => 'StripePaymentintent',
+        'action' => 'process',
         'params' => $params,
       );
     }
