@@ -74,6 +74,8 @@
  * remoteForm(remoteFormConfig); 
  * ```
  */
+
+
 function remoteForm(config) {
 
   /** 
@@ -381,9 +383,10 @@ function remoteForm(config) {
   }
 
   // Initialize our global entities. We should end up with a *parentDiv* that
-  // contains a *userMsg* div (for giving feedback to the user), *form* (containing
-  // the form the user will submit) and an *initButton* that kicks everything
-  // off. These are all global variables.
+  // contains a *userMsg* div (for giving feedback to the user), *form*
+  // (containing the form the user will submit), a spinnner/overlay div to
+  // provider user feedback when things take a while,  and an *initButton* that
+  // kicks everything off. These are all global variables.
   var parentDiv = document.getElementById(cfg.parentElementId);
   var form = document.createElement('form');
   form.id = 'remoteForm-form-' + cfg.entity + cfg.id;
@@ -391,6 +394,13 @@ function remoteForm(config) {
 
   var userMsgDiv = document.createElement('div');
   parentDiv.appendChild(userMsgDiv);
+
+  var spinnerFrameDiv = document.createElement('div');
+  spinnerFrameDiv.className = 'remoteForm-spinner-frame';
+  var spinnerDiv = document.createElement('div');
+  spinnerDiv.className = 'remoteForm-spinner';
+  parentDiv.appendChild(spinnerFrameDiv);
+  parentDiv.appendChild(spinnerDiv);
 
   // Create button that has click event to kick things off. We need this
   // even if autoInit is true so that after submission we can re-submit.
@@ -412,6 +422,8 @@ function remoteForm(config) {
   // Make a request for a list of fields to display, then process the
   // response by passing it to buildForm.
   function displayForm() {
+    spinnerFrameDiv.style.display = 'block';
+    spinnerDiv.style.display = 'block';
     parentDiv.appendChild(form);
 
     // Clear any left over user messages.
@@ -471,6 +483,8 @@ function remoteForm(config) {
     else {
       friendlyErr("Failed to validate fields. You may be trying to use an entity that is too complicated for me.");
     }
+    spinnerFrameDiv.style.display = 'none';
+    spinnerDiv.style.display = 'none';
   }
 
   // We don't support all entities - just a few and a limited set of
@@ -500,6 +514,10 @@ function remoteForm(config) {
   // pass the configuration parameter customSubmitDataFunc to override.
   function submitData(fields) {
     var params = processSubmitData(fields);
+    spinnerFrameDiv.style.display = 'block';
+    spinnerDiv.style.display = 'block';
+
+    console.log("Restting it to block");
     if (cfg.customSubmitDataFunc) {
       cfg.customSubmitDataFunc(params, submitDataPost, cfg.customSubmitDataParams, post);
     }
@@ -508,8 +526,7 @@ function remoteForm(config) {
     }
   }
 
-  function submitDataPost(params, ) {
-    console.log("Here we go!", params);
+  function submitDataPost(params) {
     post(params, processSubmitDataResponse);
   }
 
@@ -641,6 +658,9 @@ function remoteForm(config) {
     else {
       // Success!
       resetForm(cfg.successMsg);
+      spinnerFrameDiv.style.display = 'none';
+      spinnerDiv.style.display = 'none';
+
     }
   }
 

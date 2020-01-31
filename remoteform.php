@@ -178,6 +178,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $htmlize = TRUE;
   $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.js');
   $css_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.css');
+  $spin_css_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'spin.css');
   $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute, $fragment, $htmlize, $frontend);
   $base_url = parse_url(CIVICRM_UF_BASEURL, PHP_URL_HOST);
 
@@ -202,6 +203,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
       htmlentities('if you want to style the form yourself, or if you ') . '<br />' .
       htmlentities('already are including a bootstrap css environment. -->') . '<br />'.
       htmlentities('<link rel="stylesheet" property="stylesheet" href="' . $css_url . '">') . '<br />' .
+      htmlentities('<link rel="stylesheet" property="stylesheet" href="' . $spin_css_url . '">') . '<br />' .
       htmlentities('<div id="remoteForm"></div>') . '<br />' .
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
         $extra_js_urls .
@@ -209,6 +211,8 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
       htmlentities(' url: "') . $post_url . '",' . '<br>' .
       htmlentities(' id: ' . $id . ',') . '<br/>' .
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
+      htmlentities(' // Uncomment line below for test mode,') . '<br/>' .
+      htmlentities(' // paymentTestMode: true,') . '<br/>' .
         $extra_js_params .
       htmlentities('};') . '<br />' .
       htmlentities('if (typeof remoteForm !== "function") {') . '<br />' .
