@@ -75,7 +75,7 @@ Click the Console tab, and check for messages.
 ![Check console log](/images/debug-console.png)
 
 In this case, the error message is telling us that CORS is not set correctly.
-That means that the web site your pasting the javascript code into has not bee
+That means that the web site you're pasting the javascript code into has not been
 properly configured in CiviCRM on the Remote Forms page.
 
 
