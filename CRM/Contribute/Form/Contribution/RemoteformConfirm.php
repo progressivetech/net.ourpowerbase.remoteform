@@ -63,13 +63,16 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     $_SERVER['REQUEST_METHOD'] = 'GET';
     $form->controller = new CRM_Contribute_Controller_Contribution();
     $params['invoiceID'] = md5(uniqid(rand(), TRUE));
+
+    // We want to move away from passing in amount as it is calculated by the actually-submitted params.
+    $params['amount'] = $params['amount'] ?? $form->getMainContributionAmount($params);
     $paramsProcessedForForm = $form->_params = self::getFormParams($params['id'], $params);
     $form->_amount = $params['amount'];
     // hack these in for test support.
     $form->_fields['billing_first_name'] = 1;
     $form->_fields['billing_last_name'] = 1;
     // CRM-18854 - Set form values to allow pledge to be created for api test.
-    if (CRM_Utils_Array::value('pledge_block_id', $params)) {
+    if (!empty($params['pledge_block_id'])) {
       $form->_values['pledge_id'] = CRM_Utils_Array::value('pledge_id', $params, NULL);
       $form->_values['pledge_block_id'] = $params['pledge_block_id'];
       $pledgeBlock = CRM_Pledge_BAO_PledgeBlock::getPledgeBlock($params['id']);
@@ -84,13 +87,16 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     $form->_values['fee'] = $priceSetFields['fields'];
     $form->_priceSetId = $priceSetID;
     $form->setFormAmountFields($priceSetID);
-    $capabilities = array();
+    $capabilities = [];
     if ($form->_mode) {
       $capabilities[] = (ucfirst($form->_mode) . 'Mode');
     }
     $form->_paymentProcessors = CRM_Financial_BAO_PaymentProcessor::getPaymentProcessors($capabilities);
-    $form->_params['payment_processor_id'] = !empty($params['payment_processor_id']) ? $params['payment_processor_id'] : 0;
-    $form->_paymentProcessor = $form->_paymentProcessors[$form->_params['payment_processor_id']];
+    $form->_params['payment_processor_id'] = isset($params['payment_processor_id']) ? $params['payment_processor_id'] : 0;
+    if ($form->_params['payment_processor_id'] !== '') {
+      // It can be blank with a $0 transaction - then no processor needs to be selected
+      $form->_paymentProcessor = $form->_paymentProcessors[$form->_params['payment_processor_id']];
+    }
     if (!empty($params['payment_processor_id'])) {
       // The concept of contributeMode is deprecated as is the billing_mode concept.
       if ($form->_paymentProcessor['billing_mode'] == 1) {
@@ -101,11 +107,15 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
       }
     }
 
+    if (!empty($params['useForMember'])) {
+      $form->set('useForMember', 1);
+      $form->_useForMember = 1;
+    }
     $priceFields = $priceFields[$priceSetID]['fields'];
-    $lineItems = array();
+    $lineItems = [];
     CRM_Price_BAO_PriceSet::processAmount($priceFields, $paramsProcessedForForm, $lineItems, 'civicrm_contribution', $priceSetID);
-    $form->_lineItem = array($priceSetID => $lineItems);
-    $membershipPriceFieldIDs = array();
+    $form->_lineItem = [$priceSetID => $lineItems];
+    $membershipPriceFieldIDs = [];
     foreach ((array) $lineItems as $lineItem) {
       if (!empty($lineItem['membership_type_id'])) {
         $form->set('useForMember', 1);
@@ -115,6 +125,8 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
       }
     }
     $form->set('memberPriceFieldIDS', $membershipPriceFieldIDs);
+    $form->setRecurringMembershipParams();
+    $form->processFormSubmission(CRM_Utils_Array::value('contact_id', $params));
     // Added by remoteform:
     return $form->processFormSubmission(CRM_Utils_Array::value('contact_id', $params));
   }
