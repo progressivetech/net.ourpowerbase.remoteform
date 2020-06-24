@@ -565,6 +565,9 @@ function remoteForm(config) {
       if (key.startsWith('placeholder_')) {
         continue;
       }
+      if (key.startsWith('formatting_')) {
+        continue;
+      }
       if (fields.hasOwnProperty(key)) {
         var def = fields[key];
         if (!def.entity) {
@@ -931,6 +934,14 @@ function remoteForm(config) {
   function wrapField(key, def, field) {
     var div = document.createElement('div');
     div.className = cfg.css.inputDiv;
+
+    if (typeof def.html_type != 'undefined' && def.html_type == 'formatting') {
+      var formatting = document.createElement('div');
+      formatting.innerHTML = def.help_pre;
+      div.appendChild(formatting);
+      return div;
+    }
+
     if (def.help_pre) {
       var small = document.createElement('small');
       small.className = cfg.css.small;
