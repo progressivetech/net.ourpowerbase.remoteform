@@ -126,7 +126,6 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     }
     $form->set('memberPriceFieldIDS', $membershipPriceFieldIDs);
     $form->setRecurringMembershipParams();
-    $form->processFormSubmission(CRM_Utils_Array::value('contact_id', $params));
     // Added by remoteform:
     return $form->processFormSubmission(CRM_Utils_Array::value('contact_id', $params));
   }
