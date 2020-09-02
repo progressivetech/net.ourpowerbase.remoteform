@@ -73,7 +73,7 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     $form->_fields['billing_last_name'] = 1;
     // CRM-18854 - Set form values to allow pledge to be created for api test.
     if (!empty($params['pledge_block_id'])) {
-      $form->_values['pledge_id'] = CRM_Utils_Array::value('pledge_id', $params, NULL);
+      $form->_values['pledge_id'] = $params['pledge_id'] ?? NULL;
       $form->_values['pledge_block_id'] = $params['pledge_block_id'];
       $pledgeBlock = CRM_Pledge_BAO_PledgeBlock::getPledgeBlock($params['id']);
       $form->_values['max_reminders'] = $pledgeBlock['max_reminders'];
@@ -92,7 +92,7 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
       $capabilities[] = (ucfirst($form->_mode) . 'Mode');
     }
     $form->_paymentProcessors = CRM_Financial_BAO_PaymentProcessor::getPaymentProcessors($capabilities);
-    $form->_params['payment_processor_id'] = isset($params['payment_processor_id']) ? $params['payment_processor_id'] : 0;
+    $form->_params['payment_processor_id'] = $params['payment_processor_id'] ?? 0;
     if ($form->_params['payment_processor_id'] !== '') {
       // It can be blank with a $0 transaction - then no processor needs to be selected
       $form->_paymentProcessor = $form->_paymentProcessors[$form->_params['payment_processor_id']];
@@ -113,7 +113,7 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     }
     $priceFields = $priceFields[$priceSetID]['fields'];
     $lineItems = [];
-    CRM_Price_BAO_PriceSet::processAmount($priceFields, $paramsProcessedForForm, $lineItems, 'civicrm_contribution', $priceSetID);
+    $form->processAmountAndGetAutoRenew($priceFields, $paramsProcessedForForm, $lineItems, $priceSetID);
     $form->_lineItem = [$priceSetID => $lineItems];
     $membershipPriceFieldIDs = [];
     foreach ((array) $lineItems as $lineItem) {
