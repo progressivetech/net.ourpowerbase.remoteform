@@ -198,6 +198,16 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
     }
   }
 
+  $null = NULL;
+  CRM_Utils_Hook::singleton()->invoke(1, $extra_js_urls, $null, $null,
+    $null, $null, $null,
+    'civicrm_remoteform_extraJsUrls'
+  );
+  CRM_Utils_Hook::singleton()->invoke(1, $extra_js_params, $null, $null,
+    $null, $null, $null,
+    'civicrm_remoteform_extraJsParams'
+  );
+
   return 
       htmlentities('<!-- The stylesheet link is optional and can be removed ') . '<br />' .
       htmlentities('if you want to style the form yourself, or if you ') . '<br />' .
