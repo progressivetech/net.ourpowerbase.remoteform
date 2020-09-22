@@ -215,6 +215,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   foreach ($extra_js_urls as $extra_js_url) {
     $extra_js_url_tags .= htmlentities('<script src="' . $extra_js_url . '"></script>') . '<br />';
   }
+  
   return 
       htmlentities('<!-- The stylesheet link is optional and can be removed ') . '<br />' .
       htmlentities('if you want to style the form yourself, or if you ') . '<br />' .
