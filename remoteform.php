@@ -182,7 +182,7 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
   $post_url = CRM_Utils_System::url('civicrm/remoteform', $query, $absolute, $fragment, $htmlize, $frontend);
   $base_url = parse_url(CIVICRM_UF_BASEURL, PHP_URL_HOST);
 
-  $extra_js_urls = NULL;
+  $extra_js_urls = [];
   $extra_js_params = NULL;
   if ($entity == 'ContributionPage') {
     $type = strtolower(remoteform_get_payment_processor_type($id));
@@ -191,13 +191,31 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
     $extra_js_params_func = 'remoteform' . $type . '_extra_js_params';
 
     if (function_exists($extra_js_urls_func)) {
-      $extra_js_urls = $extra_js_urls_func($id);
+      $extra_js_urls += $extra_js_urls_func($id);
     }
     if (function_exists($extra_js_params_func)) {
       $extra_js_params = $extra_js_params_func($id);
     }
   }
 
+  CRM_Utils_Hook::singleton()->invoke(
+    ['id', 'extra_js_urls'],
+    $id,
+    $extra_js_urls,
+    CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject,
+    'civicrm_remoteform_extraJsUrls');
+  CRM_Utils_Hook::singleton()->invoke(
+    ['id', 'extra_js_params'],
+    $id,
+    $extra_js_params,
+    CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject,
+    'civicrm_remoteform_extraJsParams');
+
+  $extra_js_url_tags = '';
+  foreach ($extra_js_urls as $extra_js_url) {
+    $extra_js_url_tags .= htmlentities('<script src="' . $extra_js_url . '"></script>') . '<br />';
+  }
+  
   return 
       htmlentities('<!-- The stylesheet link is optional and can be removed ') . '<br />' .
       htmlentities('if you want to style the form yourself, or if you ') . '<br />' .
@@ -206,13 +224,15 @@ function remoteform_get_displayable_code($id, $entity = 'Profile') {
       htmlentities('<link rel="stylesheet" property="stylesheet" href="' . $spin_css_url . '">') . '<br />' .
       htmlentities('<div id="remoteForm"></div>') . '<br />' .
       htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
-        $extra_js_urls .
+      htmlentities('<!-- Extra JavaScript URLs, if any: ... -->') . '<br />' .
+        $extra_js_url_tags .
       htmlentities('<script> var remoteFormConfig = { ') . '<br />' .
       htmlentities(' url: "') . $post_url . '",' . '<br>' .
       htmlentities(' id: ' . $id . ',') . '<br/>' .
       htmlentities(' entity: "' . $entity . '",') . '<br/>' .
       htmlentities(' // Uncomment line below for test mode,') . '<br/>' .
       htmlentities(' // paymentTestMode: true,') . '<br/>' .
+      htmlentities(' // Extra JavaScript Params, if any: ...') . '<br />' .
         $extra_js_params .
       htmlentities('};') . '<br />' .
       htmlentities('if (typeof remoteForm !== "function") {') . '<br />' .

@@ -25,10 +25,10 @@ function remoteformstripe_include_cc_fields_in_form() {
 }
 
 function remoteformstripe_extra_js_urls() {
-  $js_url = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.stripe.js');
-  return htmlentities('<script src="' . $js_url . '"></script>') . '<br />' . 
-    htmlentities('<script src="https://js.stripe.com/v3/"></script>') . '<br />';
-
+  $extraJsUrls = [];
+  $extraJsUrls[] = Civi::resources()->getUrl('net.ourpowerbase.remoteform', 'remoteform.stripe.js');
+  $extraJsUrls[] = "https://js.stripe.com/v3/";
+  return $extraJsUrls;
 }
 
 function remoteformstripe_extra_js_params($id) {
