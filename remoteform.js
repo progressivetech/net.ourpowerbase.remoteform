@@ -717,13 +717,26 @@ function remoteForm(config) {
   function buildForm(fields) {
     for (var key in fields) {
       if (fields.hasOwnProperty(key)) {
-        var def = fields[key];
-        if (!def.entity) {
+        if (key == 'is_recur') {
+          var html = createRecurringFieldsDiv(fields, createField, wrapField);
+        }
+        else if (
+          key == 'frequency_unit'
+          || key == 'frequency_interval'
+          || key == 'installments'
+        ) {
+          // These are all processed in createRecurringFields(), so skip them here.
           continue;
         }
-        var field;
-        var type = getType(def);
-        var html = cfg.createFieldDivFunc(key, def, type, createField, wrapField);
+        else {
+          var def = fields[key];
+          if (!def.entity) {
+            continue;
+          }
+          var field;
+          var type = getType(def);
+          var html = cfg.createFieldDivFunc(key, def, type, createField, wrapField);
+        }
         if (html) {
           form.appendChild(html);
         }
@@ -832,6 +845,89 @@ function remoteForm(config) {
       return null;
     }
     return wrapFieldFunc(key, def, field);
+  }
+
+  /**
+   * ### createRecurringFieldsDiv
+   *
+   * ```createRecurringFieldsDiv(key, def, type, createFieldFunc, wrapFieldFunc)```
+   *
+   * Build the form elements related to recurring contributions, if the contribution
+   * page is configured for such. Unlike other fields in RemoteForm displays,
+   * this collection of fields appears in a running line; therefore it needs
+   * special formatting, which this function provides.
+   *
+   * #### Parameters:
+   *
+   * - fields Array of form fields, as passed to buildForm()
+   *
+   * #### Returns:
+   *
+   * A <div> element containing fields related to recurring contribution options.
+   *
+   */
+  function createRecurringFieldsDiv(fields) {
+    // Create 'recur' checkbox; code borrowed heavily from createCheckboxesOrRadios,
+    // but without wrapping everyithing in <div>s.
+    var optionId = '1';
+    var def = fields.is_recur;
+    var optionInput = document.createElement('input');
+    optionInput.type = 'checkbox';
+    // We set an id so the label below can properly reference the right
+    // input.
+    optionInput.id = def.name + '-' + optionId;
+    optionInput.className = cfg.css.checkInput;
+    // We use the name field to find the values when we submit. This
+    // value has to be unique (in case we have multiple pricesets).
+    optionInput.name = 'is_recur';
+    optionInput.value = optionId;
+
+    var optionLabel = document.createElement('label');
+    optionLabel.for = optionInput.id;
+    optionLabel.innerHTML = def.title;
+    optionLabel.className = cfg.css.checkLabel;
+
+    var div = document.createElement('div');
+    div.appendChild(optionInput);
+    div.appendChild(optionLabel);
+
+    // Create 'interval' field; this will be a hidden field with value of '1' if
+    // 'support recurring intervals' is not enabled. Otherwise, it's a text input.
+    var intervalFieldType = getType(fields.frequency_interval);
+    if (intervalFieldType != 'hidden') {
+      var intervalField = createField('frequency_interval', fields.frequency_interval, intervalFieldType);
+      // Set styles so that this field is not 99% width.
+      intervalField.setAttribute('style', 'width:5em; margin: 0 .5em;');
+      div.appendChild(intervalField);
+    }
+
+    // Create a span element to hold remaining 'recur' fields and text.
+    var span = document.createElement('span');
+
+    // Create 'recurring unit' field; this will be a hidden field with a specific
+    // value if only one value is configured in 'support recurring units'; otherwise
+    // it's a select.
+    var unitFieldType = getType(fields.frequency_unit);
+    if (unitFieldType != 'hidden') {
+      var unitField = createField('frequency_unit', fields.frequency_unit, unitFieldType);
+      unitField.setAttribute('style', 'margin: 0 .5em;');
+      div.appendChild(unitField);
+    }
+    else {
+      // If this is as hidden field, it means we only have one option for recurring
+      // units, so we should show that option as plain text.
+      span.innerHTML += ' ' + fields.frequency_unit.default;
+    }
+
+    // Add 'installments' field, if so configured.
+    if (fields.installments !== undefined) {
+      var installmentsField = createField('installments', fields.installments, getType(fields.installments));
+      installmentsField.setAttribute('style', 'width:5em; margin: 0 .5em;');
+      span.innerHTML += 'for ' + installmentsField.outerHTML  + ' installments';
+    }
+    div.appendChild(span);
+
+    return div;
   }
 
   /**
@@ -1157,7 +1253,7 @@ function remoteForm(config) {
         }
 
         optionInput.value = optionId;
-        
+
         // Create the label.
         var optionLabel = document.createElement('label');
         optionLabel.for = optionInput.id; 
@@ -1166,7 +1262,7 @@ function remoteForm(config) {
         // options = [ { key: label }, { key: label} ] and also 
         // complex options (used for price sets) which have more data:
         // options = [ {key: { label: label, amount: amount, name: name}, etc.
-        
+
         optionLabel.innerHTML = optionDisplay;
         optionLabel.className = cfg.css.checkLabel;
 
