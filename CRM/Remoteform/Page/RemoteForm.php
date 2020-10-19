@@ -63,7 +63,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         $contact_id = $result['id'];
         $this->profilePostSubmit($uf_group_id, $contact_id);
       }
-      $this->exitSuccess($result['values']);
+      $this->exitSuccess([]);
     }
     catch (Exception $e) {
       $this->exitError($e->getMessage());
@@ -153,6 +153,8 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         );
       }
       if ($action == 'submit') {
+        // Avoid updates by ensuring no contact_id is specified.
+        unset($input_params['contact_id']);
         return array(
           'entity' => 'Profile',
           'action' => 'submit',
