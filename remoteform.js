@@ -888,29 +888,20 @@ function remoteForm(config) {
    * HTML entity.
    */
   function createField(key, def, type) {
-    if (type == 'select') {
-      return createSelect(key, def);
-    }
-    else if (type == 'email') {
-      return createEmailInput(key, def);
-    }
-    else if (type == 'checkbox') {
-      return createCheckboxesOrRadios(key, def, 'checkbox');
-    }
-    else if (type == 'radio') {
-      return createCheckboxesOrRadios(key, def, 'radio');
-    }
-    else if (type == 'textarea') {
-      return createTextArea(key, def);
-    }
-    else if (type == 'date') {
-      return createDate(key, def);
-    }
-    else if (type =='hidden') {
-      return null;
-    }
-    else {
-      return createTextInput(key, def);
+    switch(type) {
+      case 'select':
+        return createSelect(key, def);
+        break;
+      case 'checkbox':
+      case 'radio':
+        return createCheckboxesOrRadios(key, def, 'checkbox');
+      case 'textarea':
+        return createTextArea(key, def);
+      case 'hidden':
+        return null;
+      default:
+        // text, date, email, etc.
+        return createTextInput(key, def, type);
     }
   }
 
@@ -992,13 +983,9 @@ function remoteForm(config) {
     }
     return field;
   }
-  
-  function createEmailInput(key, def) {
-    return createInput(key, def, 'email');
-  }
 
-  function createTextInput(key, def) {
-    return createInput(key, def, 'text');
+  function createTextInput(key, def, type) {
+    return createInput(key, def, type);
   }
 
   function createSubmit() {
@@ -1337,10 +1324,6 @@ function remoteForm(config) {
     }
     field.className = cfg.css.textarea;
     return field;
-  }
-
-  function createDate(key, def) {
-    return createInput(key, def, 'date'); 
   }
 
 }
