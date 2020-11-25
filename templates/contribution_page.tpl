@@ -4,7 +4,7 @@
     <td>
       {$form.remoteform_contribution_page_enable.html}
       {$form.remoteform_contribution_page_enable.label}
-      <div class="description">{ts}If enabled, you will be able to allow people to make contributions via this page from your on web site by including a few lines of javascript code.{/ts}</div>
+      <div class="description">{ts}If enabled, you will be able to allow people to make contributions via this page from your own web site by including a few lines of javascript code.{/ts}</div>
       <div id="remoteform-code-to-copy"><pre>{$remoteform_code}</pre></div>
     </td>
   </tr>
