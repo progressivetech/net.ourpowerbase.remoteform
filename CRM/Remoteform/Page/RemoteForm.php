@@ -242,7 +242,9 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
       $params = array(
         'payment_method_id' => $input_params['payment_method_id'],
         'amount' => intval($input_params['amount']),
-        'payment_processor_id' => $input_params['payment_processor_id'],
+        // 'payment_processor_id' => $input_params['payment_processor_id'],
+        'id' => $input_params['payment_processor_id'],
+        'currency' => $input_params['currency'],
         'description' => $input_params['description']
       ); 
       return array(
