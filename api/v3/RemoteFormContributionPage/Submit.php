@@ -16,6 +16,7 @@ function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apir
     _rf_add_page_details($contribution_page_id, $params, $test_mode);
     _rf_add_profile_fields($contribution_page_id, $params);
     _rf_add_price_fields($contribution_page_id, $params, $params['control']['currency']);
+    _rf_add_recur_fields($contribution_page_id, $params);
     // How do we handle credit card fields? Some processors may want to insert their
     // own. 
     $cc_fields = _rf_include_credit_card_fields($contribution_page_id);
@@ -77,11 +78,80 @@ function _rf_add_page_details($id, &$params, $test_mode = FALSE) {
   );
   $params['control'] = array(
    'is_active' => $values['is_active'],
+   'is_recur' => $values['is_recur'],
+   'recur_frequency_unit' => $values['recur_frequency_unit'],
+   'is_recur_interval' => $values['is_recur_interval'],
+   'is_recur_installments' => $values['is_recur_installments'],
    'start_date' => $values['start_date'],
    'currency' => $values['currency'],
    'min_amount' => $values['min_amount'],
    'payment_processor' =>  $ppid,
   );
+}
+
+function _rf_add_recur_fields($id, &$params) {
+  if ($params['control']['is_recur']) {
+    $params['is_recur'] = array (
+      'name' => 'is_recur',
+      'title' => E::ts('I want to contribute this amount every'),
+      'entity' => 'ContributionPage',
+      'html_type' => 'checkbox',
+    );
+
+    if ($params['control']['is_recur_interval']) {
+      $params['frequency_interval'] = array (
+        'name' => 'frequency_interval',
+        'entity' => 'ContributionPage',
+        'html_type' => 'text',
+      );
+      $pluralizeUnits = TRUE;
+    }
+    else {
+      $params['frequency_interval'] = array (
+        'name' => 'frequency_interval',
+        'entity' => 'ContributionPage',
+        'html_type' => 'hidden',
+        'defaul' => '1',
+      );
+      $pluralizeUnits = FALSE;
+    }
+
+    // Build frequency units array, pluralizing as needed.
+    $frequencyUnitOptions = [];
+    foreach ((array)$params['control']['recur_frequency_unit'] as $frequencyUnit) {
+      $label = $frequencyUnit;
+      if ($pluralizeUnits) {
+        $label .= '(s)';
+      }
+      $frequencyUnitOptions[$frequencyUnit] = $label;
+    }
+    if (count($frequencyUnitOptions) > 1) {
+      $params['frequency_unit'] = array (
+        'name' => 'frequency_unit',
+        'title' => E::ts('Repeat every'),
+        'entity' => 'ContributionPage',
+        'html_type' => 'select',
+        'options' => $frequencyUnitOptions,
+        'default' => 'week',
+      );
+    }
+    else {
+      $params['frequency_unit'] = array (
+        'name' => 'frequency_unit',
+        'entity' => 'ContributionPage',
+        'html_type' => 'hidden',
+        'default' => array_shift($frequencyUnitOptions),
+      );
+    }
+
+    if ($params['control']['is_recur_installments']) {
+      $params['installments'] = array (
+        'name' => 'installments',
+        'entity' => 'ContributionPage',
+        'html_type' => 'text',
+      );
+    }
+  }
 }
 
 function _rf_add_profile_fields($id, &$params) {
