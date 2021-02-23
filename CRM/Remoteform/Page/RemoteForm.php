@@ -245,6 +245,7 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         // 'payment_processor_id' => $input_params['payment_processor_id'],
         'id' => $input_params['payment_processor_id'],
         'currency' => $input_params['currency'],
+        'csrfToken' => $input_params['csrfToken'],
         'description' => $input_params['description']
       ); 
       return array(

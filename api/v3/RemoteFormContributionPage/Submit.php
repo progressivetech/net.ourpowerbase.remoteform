@@ -16,6 +16,8 @@ function _civicrm_api3_remote_form_contribution_page_Submit_spec(&$params, $apir
     _rf_add_page_details($contribution_page_id, $params, $test_mode);
     _rf_add_profile_fields($contribution_page_id, $params);
     _rf_add_price_fields($contribution_page_id, $params, $params['control']['currency']);
+    _rf_add_csrf_token_fields($params);
+
     // How do we handle credit card fields? Some processors may want to insert their
     // own. 
     $cc_fields = _rf_include_credit_card_fields($contribution_page_id);
@@ -217,6 +219,30 @@ function _rf_add_credit_card_fields(&$params) {
     $year++;
   }
 }
+
+/**
+ *
+ * Add CSRF token
+ *
+ * If you have the firewall extension enabled, it might
+ * reject this submission when it is submitted unless
+ * it has a valid CSRF token.
+ *
+ */
+function _rf_add_csrf_token_fields(&$params) {
+  if (class_exists('\Civi\Firewall\Firewall')) {
+    $params['csrfToken'] = array(
+      'title' => 'CSRF token',
+      'default_value' =>  \Civi\Firewall\Firewall::getCSRFToken(),
+      'entity' => 'contribution',
+      'html' => array(
+        'type' => 'hidden'
+      ),
+    );
+  }
+}
+
+
 /**
  * RemoteFormContributionPage.Submit API
  *
