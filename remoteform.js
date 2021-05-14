@@ -1217,6 +1217,12 @@ function remoteForm(config) {
       args['params']['country_id'] = chosen;
       label = 'State';
     }
+    if (loc == 'county') {
+      action = 'Countiesforstateprovince';
+      key_field = 'county_id';
+      args['params']['state_province_id'] = chosen;
+      label = 'County';
+    }
     else if (loc == 'country') {
       action = 'Countries';
       label = 'Country';
@@ -1264,8 +1270,13 @@ function remoteForm(config) {
     }
     else if (def.name == 'county_id') {
       selectInput.className += ' remoteform-county';
+      loc = 'county';
     }
     else if (def.name == 'state_province_id') {
+      // We need to add a callback.
+      selectInput.addEventListener('change', function() {
+        populateLocationOptions('county', this.value);
+      });
       selectInput.className += ' remoteform-state-province';
       loc = 'state-province';
     }

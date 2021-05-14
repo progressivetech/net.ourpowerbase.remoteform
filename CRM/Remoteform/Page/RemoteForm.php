@@ -224,6 +224,14 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
           'params' => $params,
         );
       }
+      if ($action == 'Countiesforstateprovince') {
+        $params['state_province_id'] = isset($input_params['state_province_id']) ? intval($input_params['state_province_id']) : NULL;
+        return array(
+          'entity' => 'RemoteForm',
+          'action' => 'Countiesforstateprovince',
+          'params' => $params,
+        );
+      }
       if ($action == 'Countries') {
         return array(
           'entity' => 'RemoteForm',
