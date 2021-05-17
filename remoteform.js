@@ -1259,17 +1259,27 @@ function remoteForm(config) {
   // get the correct option lists depending on other values on the form.
   function handleLocationOptions(selectInput, def) {
     var loc;
+    var chosen = null;
     // Add special classes so we can be sure to find these elements later
     // using getElementsByClass.
     if (def.name == 'country_id') {
       // We need to add a callback.
       selectInput.addEventListener('change', function() {
         populateLocationOptions('state-province', this.value);
-     });
-     loc = 'country';
+      });
+      loc = 'country';
     }
     else if (def.name == 'county_id') {
       selectInput.className += ' remoteform-county';
+      var chosen = document.querySelectorAll(".remoteform-state-province")[0].value;
+      if (!chosen) {
+        // FIXME - this is a hack. If no state is chosen, it's probably because
+        // the list of states have not yet been loaded. If this is the US...
+        // then I expect the first state to be Alabama, which will end up being
+        // select. So we'll load the Alabama counties instead of having no
+        // counties loaded.
+        chosen = "1000";
+      }
       loc = 'county';
     }
     else if (def.name == 'state_province_id') {
@@ -1281,7 +1291,7 @@ function remoteForm(config) {
       loc = 'state-province';
     }
     
-    populateLocationOptions(loc, null, selectInput);
+    populateLocationOptions(loc, chosen, selectInput);
   }
 
   function createSelect(key, def) {
