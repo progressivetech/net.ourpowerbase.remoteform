@@ -60,8 +60,8 @@ Everyone's web site is different. Here are examples for how to paste in
 javascript code on Drupal and Wordpress client sites, two of the most 
 popular tools for building web sites.
 
- * [Add remoteform to Drupal](drupal_client.md)
- * [Add remoteform to Wordpress](wordpress.md)
+ * [Add remoteform to a (client) website hosted on Drupal](drupal_website.md)
+ * [Add remoteform to a (client) website hosted on Wordpress](wordpress_website.md)
 
 Most web site editing tools do not let you paste in javascript code without
 making some kind of adjustment.
