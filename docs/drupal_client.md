@@ -1,6 +1,6 @@
 # Adding your code to a Drupal site
 
-If you are running your main web site on Drupal, adding the remoteform
+If you are running your client web site on Drupal, adding the remoteform
 javascript is a breeze, *provided you have the proper permissions.*
 
 If you do have the proper permissions, you can add the code to any page or
