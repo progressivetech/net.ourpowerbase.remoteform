@@ -34,6 +34,12 @@ submit forms to your CiviCRM instance.
 
 ![Choose URLs to allow](/images/cors-configuration.png)
 
+If this configuration is not sufficient to enable access to the CiviCRM server 
+from your intended client site, try the guidance provided at this link:
+
+ * [Enable CORS access on a Drupal site hosting CiviCRM RemoteForms as a service](drupal_civicrm.md)
+ * [Enable CORS access on a Wordpress site hosting CiviCRM RemoteForms as a service](wordpress_civicrm.md)
+
 Third, edit the profile or contribution page to enable remoteform. Here's an
 example of a profile page (look in `Profile Settings -> Advanced Settings`):
 
@@ -51,11 +57,11 @@ Once saved, then go back in and copy the javascript code.
 ## In your web site
 
 Everyone's web site is different. Here are examples for how to paste in
-javascript code on Drupal and Wordpress, two of the most popular tools for
-building web sites.
+javascript code on Drupal and Wordpress client sites, two of the most 
+popular tools for building web sites.
 
- * [Add remoteform to Drupal](drupal.md)
- * [Add remoteform to Wordpress](wordpress.md)
+ * [Add remoteform to a (client) website hosted on Drupal](drupal_website.md)
+ * [Add remoteform to a (client) website hosted on Wordpress](wordpress_website.md)
 
 Most web site editing tools do not let you paste in javascript code without
 making some kind of adjustment.
