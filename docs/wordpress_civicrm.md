@@ -35,7 +35,7 @@ to determine which are required for successful interactions by your form:
 
 	allowedMethods: ['HEAD','GET','POST','PUT']
 
-A customm profile has been found to work between two drupal sites with
+A custom profile has been found to work between two drupal sites with
 ['GET','POST'] enabled.  As users successfully test contribution forms
 and other civicrm entities as they may be enabled by future versions
 of this extension, pull requests are welcome to hone this documentation
