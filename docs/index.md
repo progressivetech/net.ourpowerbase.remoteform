@@ -37,8 +37,8 @@ submit forms to your CiviCRM instance.
 If this configuration is not sufficient to enable access to the CiviCRM server 
 from your intended client site, try the guidance provided at this link:
 
- * [Enable CORS access on a Drupal site hosting CiviCRM RemoteForms as a service](drupal_server.md)
- * [Enable CORS access on a Wordpress site hosting CiviCRM RemoteForms as a service](wordpress_server.md)
+ * [Enable CORS access on a Drupal site hosting CiviCRM RemoteForms as a service](drupal_civicrm.md)
+ * [Enable CORS access on a Wordpress site hosting CiviCRM RemoteForms as a service](wordpress_civicrm.md)
 
 Third, edit the profile or contribution page to enable remoteform. Here's an
 example of a profile page (look in `Profile Settings -> Advanced Settings`):
