@@ -51,7 +51,7 @@ pages.
 
 When building your profile (at /civicrm/admin/uf/group?reset=1), do not use 'Primary' 
 for any of your Contact fields.  For whatever reason, although the fields are exhibited 
-on the (client) website, the data does not get store on the (server) CiviCRM site.  
+on the (client) website, the data does not get stored on the (server) CiviCRM site.  
 
 It appears that if you omit the country selector field on your form, that the state 
 selector will be built on a default country matching that of the 'Default Organization 
