@@ -57,6 +57,25 @@ It appears that if you omit the country selector field on your form, that the st
 selector will be built on a default country matching that of the 'Default Organization 
 Address' configured at: /civicrm/admin/domain.  
 
+If this guidance is not enough to ensure that your profile fields configured 
+on the (server) CiviCRM installation collect data on the (client) website, 
+and store that data in the database hosted on the (server) CiviCRM installation, 
+try running this API call via the command line or the API explorer: 
+
+cv api Profile.getfields api_action=submit profile_id=YOURPROFILEID 
+
+If your missing field shows up, then this is probably a remoteform bug. 
+
+ * [Report bugs in the RemoteForm CiviCRM extension](https://github.com/progressivetech/net.ourpowerbase.remoteform/issues)
+
+If it does not show up, then it's a core api v3 bug.
+
+ * [Report bugs in the CiviCRM API for v3](this-link-is-broken-and-must-be-researched)
+
+Sadly, api v3 is a bit rickety and not very well supported now that api v4 is on the 
+scene. In the long run, this extension will either need to switch to api v4, or 
+somehow work with afform.
+
 **Important**: Be sure to click save after you click the checkbox! If you don't
 save the profile or contribution page, then Remoteform will not work.
 
