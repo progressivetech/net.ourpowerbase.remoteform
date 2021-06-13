@@ -62,7 +62,7 @@ on the (server) CiviCRM installation collect data on the (client) website,
 and store that data in the database hosted on the (server) CiviCRM installation, 
 try running this API call via the command line or the API explorer: 
 
-cv api Profile.getfields api_action=submit profile_id=YOURPROFILEID 
+	`cv api Profile.getfields api_action=submit profile_id=YOURPROFILEID`
 
 If your missing field shows up, then this is probably a remoteform bug. 
 
