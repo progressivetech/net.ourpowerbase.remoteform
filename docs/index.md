@@ -49,6 +49,14 @@ If you want to place a contribution page on your web site, you will see the
 same field option on the main Title configuration tab of all your contribution
 pages.
 
+When building your profile (at /civicrm/admin/uf/group?reset=1), do not use 'Primary' 
+for any of your Contact fields.  For whatever reason, although the fields are exhibited 
+on the (client) website, the data does not get store on the (server) CiviCRM site.  
+
+It appears that if you omit the country selector field on your form, that the state 
+selector will be built on a default country matching that of the 'Default Organization 
+Address' configured at: /civicrm/admin/domain.  
+
 **Important**: Be sure to click save after you click the checkbox! If you don't
 save the profile or contribution page, then Remoteform will not work.
 
