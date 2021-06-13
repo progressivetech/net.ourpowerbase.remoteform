@@ -49,33 +49,6 @@ If you want to place a contribution page on your web site, you will see the
 same field option on the main Title configuration tab of all your contribution
 pages.
 
-When building your profile (at /civicrm/admin/uf/group?reset=1), do not use 'Primary' 
-for any of your Contact fields.  For whatever reason, although the fields are exhibited 
-on the (client) website, the data does not get stored on the (server) CiviCRM site.  
-
-It appears that if you omit the country selector field on your form, that the state 
-selector will be built on a default country matching that of the 'Default Organization 
-Address' configured at: /civicrm/admin/domain.  
-
-If this guidance is not enough to ensure that your profile fields configured 
-on the (server) CiviCRM installation collect data on the (client) website, 
-and store that data in the database hosted on the (server) CiviCRM installation, 
-try running this API call via the command line or the API explorer: 
-
-	`cv api Profile.getfields api_action=submit profile_id=YOURPROFILEID`
-
-If your missing field shows up, then this is probably a remoteform bug. 
-
- * [Report bugs in the RemoteForm CiviCRM extension](https://github.com/progressivetech/net.ourpowerbase.remoteform/issues)
-
-If it does not show up, then it's a core api v3 bug.
-
- * [Report bugs in the CiviCRM API for v3](this-link-is-broken-and-must-be-researched)
-
-Sadly, api v3 is a bit rickety and not very well supported now that api v4 is on the 
-scene. In the long run, this extension will either need to switch to api v4, or 
-somehow work with afform.
-
 **Important**: Be sure to click save after you click the checkbox! If you don't
 save the profile or contribution page, then Remoteform will not work.
 
@@ -111,4 +84,34 @@ In this case, the error message is telling us that CORS is not set correctly.
 That means that the web site you're pasting the javascript code into has not been
 properly configured in CiviCRM on the Remote Forms page.
 
+## Debugging Undisplayed Fields and Unstored Data
+
+When building your profile (at /civicrm/admin/uf/group?reset=1), do not use 'Primary' 
+for any of your Contact fields.  For whatever reason, although the fields are exhibited 
+on the (client) website, the data does not get stored on the (server) CiviCRM site.  
+
+It appears that if you omit the country selector field on your form, that the state 
+selector will be built on a default country matching that of the 'Default Organization 
+Address' configured at: /civicrm/admin/domain.  
+
+If this guidance is not enough to ensure that your profile fields configured 
+on the (server) CiviCRM installation collect data on the (client) website, 
+and store that data in the database hosted on the (server) CiviCRM installation, 
+try running this API call via the command line or the API explorer on the 
+(server) CiviCRM installation: 
+
+	vendor/bin/cv api Profile.getfields api_action=submit profile_id=YOURPROFILEID
+
+If your missing field shows up in response to this query, 
+then this is probably a remoteform bug. 
+
+ * [Report bugs in the RemoteForm CiviCRM extension](https://github.com/progressivetech/net.ourpowerbase.remoteform/issues)
+
+If it does not show up, then it's a core api v3 bug.
+
+ * [Report bugs in the CiviCRM API for v3](this-link-is-broken-and-must-be-researched)
+
+Sadly, api v3 is a bit rickety and not very well supported now that api v4 is on the 
+scene. In the long run, this extension will either need to switch to api v4, or 
+somehow work with afform.
 
