@@ -109,9 +109,12 @@ then this is probably a remoteform bug.
 
 If it does not show up, then it's a core api v3 bug.
 
- * [Report bugs in the CiviCRM API for v3](this-link-is-broken-and-must-be-researched)
+ * [Report bugs in the CiviCRM API for v3](https://lab.civicrm.org/dev/core/-/issues)
 
-Sadly, api v3 is a bit rickety and not very well supported now that api v4 is on the 
-scene. In the long run, this extension will either need to switch to api v4, or 
-somehow work with afform.
+This extension is built using the CiviCRM API version 3. Now that 
+[API version 4](https://docs.civicrm.org/dev/en/latest/api/v4/usage/) is on the  scene, 
+not all of the core API version 3 bugs will get fixed so please open an issue here if 
+you do not get any movement on an API version 3 issue in core. In the long run, this 
+extension will either need to switch to API version 4, and/or intergrate with 
+[afform](https://lab.civicrm.org/dev/core/-/tree/master/ext/afform).
 
