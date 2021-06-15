@@ -84,4 +84,37 @@ In this case, the error message is telling us that CORS is not set correctly.
 That means that the web site you're pasting the javascript code into has not been
 properly configured in CiviCRM on the Remote Forms page.
 
+## Debugging Undisplayed Fields and Unstored Data
+
+When building your profile (at /civicrm/admin/uf/group?reset=1), do not use 'Primary' 
+for any of your Contact fields.  For whatever reason, although the fields are exhibited 
+on the (client) website, the data does not get stored on the (server) CiviCRM site.  
+
+It appears that if you omit the country selector field on your form, that the state 
+selector will be built on a default country matching that of the 'Default Organization 
+Address' configured at: /civicrm/admin/domain.  
+
+If this guidance is not enough to ensure that your profile fields configured 
+on the (server) CiviCRM installation collect data on the (client) website, 
+and store that data in the database hosted on the (server) CiviCRM installation, 
+try running this API call via the command line or the API explorer on the 
+(server) CiviCRM installation: 
+
+	vendor/bin/cv api Profile.getfields api_action=submit profile_id=YOURPROFILEID
+
+If your missing field shows up in response to this query, 
+then this is probably a remoteform bug. 
+
+ * [Report bugs in the RemoteForm CiviCRM extension](https://github.com/progressivetech/net.ourpowerbase.remoteform/issues)
+
+If it does not show up, then it's a core api v3 bug.
+
+ * [Report bugs in the CiviCRM API for v3](https://lab.civicrm.org/dev/core/-/issues)
+
+This extension is built using the CiviCRM API version 3. Now that 
+[API version 4](https://docs.civicrm.org/dev/en/latest/api/v4/usage/) is on the  scene, 
+not all of the core API version 3 bugs will get fixed so please open an issue here if 
+you do not get any movement on an API version 3 issue in core. In the long run, this 
+extension will either need to switch to API version 4, and/or intergrate with 
+[afform](https://lab.civicrm.org/dev/core/-/tree/master/ext/afform).
 
