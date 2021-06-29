@@ -894,7 +894,7 @@ function remoteForm(config) {
         break;
       case 'checkbox':
       case 'radio':
-        return createCheckboxesOrRadios(key, def, 'checkbox');
+        return createCheckboxesOrRadios(key, def, type);
       case 'textarea':
         return createTextArea(key, def);
       case 'hidden':
