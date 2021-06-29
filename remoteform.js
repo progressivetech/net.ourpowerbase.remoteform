@@ -1144,7 +1144,10 @@ function remoteForm(config) {
         }
 
         optionInput.value = optionId;
-        
+        if (def.default_value == optionId) {
+          optionInput.checked = true;
+        }
+
         // Create the label.
         var optionLabel = document.createElement('label');
         optionLabel.for = optionInput.id; 
