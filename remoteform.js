@@ -87,14 +87,14 @@ function remoteForm(config) {
    * is the object passed in by the user. All the parameters below can be
    * changed by adding or editing your ```var config``` line. For example,
    * if you read about cfg.parentElementId and decide you want to change the
-   * parentId, you would pass the following to the remoteForm function:
+   * parentElementId, you would pass the following to the remoteForm function:
    *
    * ```
    * var config = { 
    *  url: "https://YOURSITE.ORG/civicrm/remoteform",
    *  id: 1, 
    *  entity: "ContributionPage",
-   *  parentId: "my-parent-id"
+   *  parentElementId: "my-parent-id"
    * };
    *  ```
    */

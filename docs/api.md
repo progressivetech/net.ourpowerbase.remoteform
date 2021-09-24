@@ -80,14 +80,14 @@ cfg is a sanitized global configuration object based on config, which
 is the object passed in by the user. All the parameters below can be
 changed by adding or editing your ```var config``` line. For example,
 if you read about cfg.parentElementId and decide you want to change the
-parentId, you would pass the following to the remoteForm function:
+parentElementId, you would pass the following to the remoteForm function:
 
 ```
 var config = { 
 url: "https://YOURSITE.ORG/civicrm/remoteform",
 id: 1, 
 entity: "ContributionPage",
-parentId: "my-parent-id"
+parentElementId: "my-parent-id"
 };
 ```
 ### cfg.url
@@ -115,10 +115,10 @@ order to display the form. Default: true.
 ### cfg.initTxt
 
 If cfg.autoInit is false, the text displayed on the button to click
-for the user to display the form. Default: Join our mailing list.
+for the user to display the form. Default: Fill in the form.
 ### cfg.submitTxt
 
-The text to display on the form's submit button. Default: Join.
+The text to display on the form's submit button. Default: Submit.
 ### cfg.cancelTxt
 
 The text to display on the form's cancel button. Default: Cancel.
@@ -152,6 +152,15 @@ by your function, for example, to remove the credit card number), to
 complete the process and send the info back to CiviCRM.
 - customSubmitDataParams - any custom parameters passed by the user (see
 below). You may need to the user to include an api key, etc.
+
+See remoteform.stripe.js for an example.
+### cfg.customInitFunc
+
+Trigger javascript code to run after the form is built.
+
+If you define this function, it should accept one argument.
+
+id: The html element id of the enclosing div. 
 
 See remoteform.stripe.js for an example.
 ### cfg.customSubmitDataParams
@@ -327,3 +336,11 @@ Contribution_Amount.
 This function return true if we think this is an other amount
 option or false otherwise.
 Checkbox and Radio collections.
+Populate a location drop down with the appropriate values.
+
+We dynamically populate the state/province, county and country
+drop down lists by querying CiviCRM for the appropriate values.
+
+In the case of state province, the right values will depend on the
+chosen country. In the case of county, the right values will depend
+on the chosen state.
