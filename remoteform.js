@@ -614,13 +614,6 @@ function remoteForm(config) {
           var options = document.getElementsByName(key);
           for (var i = 0; i < options.length; i++) {
             if (options[i].checked) {
-              if (type == 'checkbox') {
-                value.push(options[i].value);
-              }
-              else {
-                value = options[i].value;
-              }
-
               // If this is a price set field, then we will need to calculate
               // the amount. Either it will be an 'Other_Amount' option, which
               // means we have to find the Other_Amount field to get the amount
@@ -629,10 +622,20 @@ function remoteForm(config) {
                 if (options[i].hasAttribute('data-is-other-amount')) {
                   // Get the total from the Other_Amount field.
                   amount = parseFloat(document.getElementById('Other_Amount').value);
+                  // the data-is-other-amount attribute is set to the other amount price field.
+                  field_name = 'price_' + options[i].getAttribute('data-is-other-amount');
+                  value = amount;
                 }
                 else if (options[i].hasAttribute('data-amount')) {
                   amount = parseFloat(options[i].getAttribute('data-amount'));
+                  value = options[i].value;
                 }
+              }
+              else if (type == 'checkbox') {
+                value.push(options[i].value);
+              }
+              else {
+                value = options[i].value;
               }
             }
           }
@@ -1104,8 +1107,9 @@ function remoteForm(config) {
             optionDisplay = optionObj['label'];
 
             // Add an attribute so we know it is an Other_Amount field when
-            // we are calculating the total amount to submit.
-            optionInput.setAttribute('data-is-other-amount', 1);
+            // we are calculating the total amount to submit and we know which
+            // price field it belongs to.
+            optionInput.setAttribute('data-is-other-amount', optionObj['price_field_id']);
 
             // If clicked, show other amount text box.
             optionInput.addEventListener('click', function(e) {

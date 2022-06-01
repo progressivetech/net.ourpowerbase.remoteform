@@ -110,7 +110,7 @@ function _rf_add_profile_fields($id, &$params) {
 
 function _rf_add_price_fields($id, &$params, $currency = 'USD') {
   $sql = "SELECT fv.id, fv.name, fv.label, fv.help_pre, fv.help_post, fv.amount, 
-   fv.is_default, pse.price_set_id, pf.id AS price_field_id
+   fv.is_default, pse.price_set_id, pf.id AS price_field_id, ps.name as price_set_name
    FROM civicrm_price_field_value fv
      JOIN civicrm_price_field pf ON fv.price_field_id = pf.id
      JOIN civicrm_price_set ps ON ps.id = pf.price_set_id
@@ -121,18 +121,24 @@ function _rf_add_price_fields($id, &$params, $currency = 'USD') {
   $options = array();
   $default_value = NULL;
   $i = 0;
+  $key = NULL;
   while($dao->fetch()) {
     $options[$dao->id] = array(
       'amount' => $dao->amount,
       'label' => $dao->label,
       'name' => $dao->name,
-      'currency' => $currency
+      'currency' => $currency,
+      // This is unused in most cases, but is required for any "other_amount" options
+      // so we know which price field it belongs to.
+      'price_field_id' => $dao->price_field_id,
      );
     if ($dao->is_default) {
       $default_value = $dao->id;
     }
+    if (is_null($key) && $dao->price_set_name != 'other_amount') {
+      $key = 'price_' . $dao->price_field_id;
+    }
   }
-  $key = 'price_' . $dao->price_field_id;
   $params[$key] = array(
     'title' => 'Choose Amount',
     'default_value' => $default_value,
