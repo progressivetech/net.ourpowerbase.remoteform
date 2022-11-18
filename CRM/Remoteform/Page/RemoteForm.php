@@ -126,6 +126,10 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
 
     $entity = $input->entity;
     $input_params = get_object_vars($input->params);
+    $session_id = $input_params['session_id'] ?? NULL;
+    if ($session_id) {
+      session_id($session_id);
+    }
     $action = $input->action;
     if ($entity == 'Profile') {
       // Ensure this site allows access to profiles.
@@ -193,7 +197,6 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
           'test_mode' => $test_mode
         );
         
-        CRM_Core_Error::debug_var('params', $params);
         return array(
           'entity' => 'RemoteFormContributionPage',
           'action' => 'getfields',

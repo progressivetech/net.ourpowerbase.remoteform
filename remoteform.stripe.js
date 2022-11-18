@@ -88,6 +88,7 @@ function submitStripe(params, finalSubmitDataFunc, cfg, remoteformPostFunc) {
         currency: 'USD',
         payment_processor_id: params['params']['payment_processor_id'],
         csrfToken:  params['params']['csrfToken'],
+        session_id:  params['params']['session_id'],
         description: document.title,
       };
       var args = {

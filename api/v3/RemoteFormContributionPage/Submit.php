@@ -245,6 +245,14 @@ function _rf_add_csrf_token_fields(&$params) {
         'type' => 'hidden'
       ),
     );
+    $params['session_id'] = array(
+      'title' => 'Session Id',
+      'default_value' =>  \CRM_Core_Config::singleton()->userSystem->getSessionId(),
+      'entity' => 'contribution',
+      'html' => array(
+        'type' => 'hidden'
+      ),
+    );
   }
 }
 
