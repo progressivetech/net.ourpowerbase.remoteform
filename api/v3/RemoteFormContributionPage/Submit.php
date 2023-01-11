@@ -156,7 +156,7 @@ function _rf_add_price_fields($id, &$params, $currency = 'USD') {
   );
   $params['payment_instrument_id'] = array(
     'title' => ts("Payment Instrument ID"),
-    'default_value' =>  CRM_Core_OptionGroup::getValue('payment_instrument', 'Credit Card', 'name'),
+    'default_value' =>  CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_FinancialTrxn', 'payment_instrument_id', 'Credit Card'),
     'entity' => 'contribution',
     'html' => array('type' => 'hidden'),
   );
