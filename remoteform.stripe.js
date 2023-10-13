@@ -92,8 +92,8 @@ function submitStripe(params, finalSubmitDataFunc, cfg, remoteformPostFunc) {
         description: document.title,
       };
       var args = {
-        entity: 'paymentIntent',
-        action: 'generate',
+        entity: 'StripePaymentintent',
+        action: 'processPublic',
         params: post_params,
       }
       // Send paymentMethod.id to powerbase server

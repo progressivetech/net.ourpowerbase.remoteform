@@ -18,56 +18,71 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
     try {
       // CRM_Core_Error::debug_var('data', $data);
       // Special exception to check for dupes.
-      if (strtolower($data['entity']) == 'profile' && strtolower($data['action']) == 'submit') {
-        $checkPerms = FALSE;
-        $excludedContactIds = [];
-        $dupes = CRM_Contact_BAO_Contact::getDuplicateContacts($data['params'], 'Individual', 'Unsupervised', $excludedContactIds, $checkPerms);
-        $num = count($dupes);
-        if ($num > 0) {
-          // We have 1 or more dupes. We better do something.
-          // First, let's see what the policy is for this profile.
-          // 0 means issue warning and do not update, 1 means update the dupe, 2 means create dupe.
-          $is_update_dupe = civicrm_api3('UFGroup', 'getvalue', [ 'return' => "is_update_dupe", 'id' => $data['params']['profile_id'] ]);
+      if (strtolower($data['entity']) == 'stripepaymentintent' && strtolower($data['action']) == 'processpublic') {
+        // Special exceptioin - we need to run an api4 call, not an api3 call.
+        $result = \Civi\Api4\StripePaymentintent::processPublic(TRUE)
+          ->setPaymentMethodID($data['params']['payment_method_id'])
+          ->setAmount(strval($data['params']['amount']))
+          ->setCurrency($data['params']['currency'])
+          ->setPaymentProcessorID($data['params']['id'])
+          ->setIntentID(NULL)
+          ->setDescription($data['params']['description'])
+          ->setCsrfToken($data['params']['csrfToken'])
+          ->execute();
+        $this->exitSuccess($result);
+      }
+      else {
+        if (strtolower($data['entity']) == 'profile' && strtolower($data['action']) == 'submit') {
+          $checkPerms = FALSE;
+          $excludedContactIds = [];
+          $dupes = CRM_Contact_BAO_Contact::getDuplicateContacts($data['params'], 'Individual', 'Unsupervised', $excludedContactIds, $checkPerms);
+          $num = count($dupes);
+          if ($num > 0) {
+            // We have 1 or more dupes. We better do something.
+            // First, let's see what the policy is for this profile.
+            // 0 means issue warning and do not update, 1 means update the dupe, 2 means create dupe.
+            $is_update_dupe = civicrm_api3('UFGroup', 'getvalue', [ 'return' => "is_update_dupe", 'id' => $data['params']['profile_id'] ]);
 
-          if ($is_update_dupe == '0') {
-            throw new CiviCRM_API3_Exception(E::ts("You are already in the database! Congrats."));
-          }
-          elseif ($is_update_dupe == 1) {
-            if ($num == 1) {
-              // Just one. Ok, this must be the same contact. Update our params
-              // to include the dupe contact id and we should be good.
-              $data['params']['contact_id'] = array_pop($dupes);
+            if ($is_update_dupe == '0') {
+              throw new CiviCRM_API3_Exception(E::ts("You are already in the database! Congrats."));
+            }
+            elseif ($is_update_dupe == 1) {
+              if ($num == 1) {
+                // Just one. Ok, this must be the same contact. Update our params
+                // to include the dupe contact id and we should be good.
+                $data['params']['contact_id'] = array_pop($dupes);
+              }
+              else {
+                // More than one dupe. Now what? In keeping with what happens when
+                // you fill out a profile, we simply pick off the first one.
+                $data['params']['contact_id'] = array_shift($dupes);
+              }
+            }
+            elseif ($is_update_dupe == 2) {
+              // No op. We don't have to do anything to create the dupe.
             }
             else {
-              // More than one dupe. Now what? In keeping with what happens when
-              // you fill out a profile, we simply pick off the first one.
-              $data['params']['contact_id'] = array_shift($dupes);
+              // Error
+              throw new CiviCRM_API3_Exception(E::ts("Your profile has a mis-configured setting for duplicate handling."));
             }
           }
-          elseif ($is_update_dupe == 2) {
-            // No op. We don't have to do anything to create the dupe.
-          }
-          else {
-            // Error
-            throw new CiviCRM_API3_Exception(E::ts("Your profile has a mis-configured setting for duplicate handling."));
-          }
         }
+        $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
+        // Special exception - The API profile submit function doesn't add
+        // contacts to a group or send email notification, even if the profile
+        // specifies that it should.
+        // See: https://lab.civicrm.org/dev/core/issues/581
+        if (strtolower($data['entity']) == 'profile' && strtolower($data['action']) == 'submit') {
+          $uf_group_id = $data['params']['profile_id'];
+          $contact_id = $result['id'];
+          $this->profilePostSubmit($uf_group_id, $contact_id);
+        }
+        // More exceptions... we never return values on submit to avoid leaks.
+        if (strtolower($data['action']) == 'submit') {
+          $result['values'] = [];
+        }
+        $this->exitSuccess($result['values']);
       }
-      $result = civicrm_api3($data['entity'], $data['action'], $data['params'] ); 
-      // Special exception - The API profile submit function doesn't add
-      // contacts to a group or send email notification, even if the profile
-      // specifies that it should.
-      // See: https://lab.civicrm.org/dev/core/issues/581
-      if (strtolower($data['entity']) == 'profile' && strtolower($data['action']) == 'submit') {
-        $uf_group_id = $data['params']['profile_id'];
-        $contact_id = $result['id'];
-        $this->profilePostSubmit($uf_group_id, $contact_id);
-      }
-      // More exceptions... we never return values on submit to avoid leaks.
-      if (strtolower($data['action']) == 'submit') {
-        $result['values'] = [];
-      }
-      $this->exitSuccess($result['values']);
     }
     catch (Exception $e) {
       $this->exitError($e->getMessage());
@@ -246,22 +261,22 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         throw new CiviCRM_API3_Exception(E::ts("That action is not allowed."));
       }
     }
-    else if ($entity == 'paymentIntent') {
-      if ($action != 'generate') {
+    else if ($entity == 'StripePaymentintent') {
+      if ($action != 'processPublic') {
         throw new CiviCRM_API3_Exception(E::ts("That action is not allowed."));
       }
       $params = array(
         'payment_method_id' => $input_params['payment_method_id'],
-        'amount' => intval($input_params['amount']),
-        // 'payment_processor_id' => $input_params['payment_processor_id'],
+        'amount' => $input_params['amount'],
         'id' => $input_params['payment_processor_id'],
         'currency' => $input_params['currency'],
         'csrfToken' => $input_params['csrfToken'],
         'description' => $input_params['description']
       ); 
+
       return array(
         'entity' => 'StripePaymentintent',
-        'action' => 'process',
+        'action' => 'processPublic',
         'params' => $params,
       );
     }
