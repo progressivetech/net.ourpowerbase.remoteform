@@ -126,7 +126,7 @@ class CRM_Remoteform_Form_RemoteformSettings extends CRM_Core_Form {
     $this->addFormRule(array('CRM_Remoteform_Form_RemoteformSettings', 'myRules'));
   }
 
-  function myrules($values) {
+  static function myRules($values) {
     $errors = array();
 
     $urls = explode("\n", $values['remoteform_cors_urls']);
