@@ -1,34 +1,18 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2018                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2018
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
 /**
@@ -41,7 +25,8 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
    *
    * @param array $params
    *
-   * @throws CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
    */
   public static function submit($params) {
     # Added by remoteform:
@@ -58,7 +43,6 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
     }
 
     CRM_Contribute_BAO_ContributionPage::setValues($form->_id, $form->_values);
-    $form->_separateMembershipPayment = CRM_Contribute_BAO_ContributionPage::getIsMembershipPayment($form->_id);
     //this way the mocked up controller ignores the session stuff
     $_SERVER['REQUEST_METHOD'] = 'GET';
     $form->controller = new CRM_Contribute_Controller_Contribution();
@@ -66,18 +50,13 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
 
     $paramsProcessedForForm = $form->_params = self::getFormParams($params['id'], $params);
 
-    $order = new CRM_Financial_BAO_Order();
-    $order->setPriceSetIDByContributionPageID($params['id']);
-    $order->setPriceSelectionFromUnfilteredInput($params);
-    if (isset($params['amount']) && !CRM_Contribute_BAO_ContributionPage::getIsMembershipPayment($form->_id)) {
+    $form->order = new CRM_Financial_BAO_Order();
+    $form->order->setPriceSetIDByContributionPageID($params['id']);
+    $form->order->setPriceSelectionFromUnfilteredInput($params);
+    if (isset($params['amount']) && !$form->isSeparateMembershipPayment()) {
       // @todo deprecate receiving amount, calculate on the form.
-      $order->setOverrideTotalAmount($params['amount']);
+      $form->order->setOverrideTotalAmount((float) $params['amount']);
     }
-    $amount = $order->getTotalAmount();
-    if ($form->_separateMembershipPayment) {
-      $amount -= $order->getMembershipTotalAmount();
-    }
-    $form->_amount = $params['amount'] = $form->_params['amount'] = $amount;
     // hack these in for test support.
     $form->_fields['billing_first_name'] = 1;
     $form->_fields['billing_last_name'] = 1;
@@ -107,25 +86,14 @@ class CRM_Contribute_Form_Contribution_RemoteformConfirm extends CRM_Contribute_
       // It can be blank with a $0 transaction - then no processor needs to be selected
       $form->_paymentProcessor = $form->_paymentProcessors[$form->_params['payment_processor_id']];
     }
-    if (!empty($params['payment_processor_id'])) {
-      // The concept of contributeMode is deprecated as is the billing_mode concept.
-      if ($form->_paymentProcessor['billing_mode'] == 1) {
-        $form->_contributeMode = 'direct';
-      }
-      else {
-        $form->_contributeMode = 'notify';
-      }
-    }
 
     if (!empty($params['useForMember'])) {
       $form->set('useForMember', 1);
       $form->_useForMember = 1;
     }
     $priceFields = $priceFields[$priceSetID]['fields'];
-
-    $form->_lineItem = [$priceSetID => $order->getLineItems()];
     $membershipPriceFieldIDs = [];
-    foreach ($order->getLineItems() as $lineItem) {
+    foreach ($form->order->getLineItems() as $lineItem) {
       if (!empty($lineItem['membership_type_id'])) {
         $form->set('useForMember', 1);
         $form->_useForMember = 1;

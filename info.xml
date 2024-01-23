@@ -18,7 +18,7 @@
   <version>0.1</version>
   <develStage>alpha</develStage>
   <compatibility>
-    <ver>5.39</ver>
+    <ver>5.69</ver>
   </compatibility>
   <comments>This module is not fully tested and not ready for production. If using with Stripe, please ensure you are running Stripe greater or equal to 6.3</comments>
   <civix>

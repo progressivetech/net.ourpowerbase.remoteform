@@ -73,7 +73,8 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 ## Requirements
 
 * PHP v7.0+
-* CiviCRM (5.0)
+* CiviCRM (5.69) This extension overrides the Contribution Page submit.php file, so you must be
+sure to run the exact version of CiviCRM specified.
 
 ## Known Problems
 
