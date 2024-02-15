@@ -257,7 +257,7 @@ function remoteform_add_enable_field($form, $name, $label, $code) {
 
   // dynamically insert a template block in the page
   CRM_Core_Region::instance('page-body')->add(array(
-    'template' => "{$templatePath}/${name}.tpl"
+    'template' => "{$templatePath}/{$name}.tpl"
   ));
   $id = intval($form->getVar('_id'));
 
