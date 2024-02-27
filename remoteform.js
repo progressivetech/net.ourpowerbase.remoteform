@@ -952,7 +952,7 @@ function remoteForm(config) {
       // sr_only will hide except for screen readers.
       label.className = cfg.css.sr_only;
     }
-    label.for = key;
+    label.htmlFor = key;
     label.innerHTML = def.title;
     div.appendChild(label);
 
@@ -1155,7 +1155,7 @@ function remoteForm(config) {
 
         // Create the label.
         var optionLabel = document.createElement('label');
-        optionLabel.for = optionInput.id; 
+        optionLabel.htmlFor = optionInput.id;
 
         // We have both simple options (the label is the value, e.g.
         // options = [ { key: label }, { key: label} ] and also 
