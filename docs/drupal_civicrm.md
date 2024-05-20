@@ -35,12 +35,16 @@ your form work might be.
 
 Start by limiting interactions to ONLY your intended (client) website(s):
 
-	allowedOrigins: ['https://www.YOUR_CLIENT_WEBSITE_DOMAIN.org']
+```
+allowedOrigins: ['https://www.YOUR_CLIENT_WEBSITE_DOMAIN.org']
+```
 
 Next try limiting the allowed Methods, deleting or restoring one at a time, 
 to determine which are required for successful interactions by your form:
 
-	allowedMethods: ['HEAD','GET','POST','PUT']
+```
+allowedMethods: ['HEAD','GET','POST','PUT']
+```
 
 A custom profile has been found to work between two drupal sites with 
 ['GET','POST'] enabled.  As users successfully test contribution forms 
@@ -50,7 +54,9 @@ to reflect that experience.
 
 Lastly, try with few headers. The following *should* work:
 
-  allowedHeaders: ["content-type"]
+```
+allowedHeaders: ["content-type"]
+```
 
 ## enable encryted communication between the host and client servers
 
