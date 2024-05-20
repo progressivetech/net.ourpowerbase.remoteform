@@ -17,13 +17,14 @@ that you configure the cors.config stanza in the configuration file
 at: web/sites/default/services.yml .  
 
 In your intial tests, try setting:
-
+```
   parameters:
     cors.config:
       enabled: true
       allowedOrigins: ['*']
       allowedMethods: ['*']
       allowedHeaders: ['*']
+```
 
 ## tightening security
 
