@@ -18,10 +18,12 @@ at: web/sites/default/services.yml .
 
 In your intial tests, try setting:
 
-	enabled: true
-	allowedOrigins: ['*']
-	allowedMethods: ['*']
-	allowedHeaders: ['*']
+  parameters:
+    cors.config:
+      enabled: true
+      allowedOrigins: ['*']
+      allowedMethods: ['*']
+      allowedHeaders: ['*']
 
 ## tightening security
 
@@ -45,10 +47,9 @@ and other civicrm entities as they may be enabled by future versions
 of this extension, pull requests are welcome to hone this documentation 
 to reflect that experience.  
 
-Similar experimentation may reveal the minimum set of headers required 
-for a working form.  Again, please consider offering a pull request 
-to enhance this documentation to reflect your experience successfully 
-configuring this extension to work in your environment.  
+Lastly, try with few headers. The following *should* work:
+
+  allowedHeaders: ["content-type"]
 
 ## enable encryted communication between the host and client servers
 
