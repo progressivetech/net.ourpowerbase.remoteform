@@ -35,6 +35,10 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
         if (strtolower($data['entity']) == 'profile' && strtolower($data['action']) == 'submit') {
           $checkPerms = FALSE;
           $excludedContactIds = [];
+          // issue#13 Workaround because the deduping is case-sensitive
+          if (!empty($data['params']['email-primary'])) {
+            $data['params']['email-Primary'] = $data['params']['email-primary'];
+          }
           $dupes = CRM_Contact_BAO_Contact::getDuplicateContacts($data['params'], 'Individual', 'Unsupervised', $excludedContactIds, $checkPerms);
           $num = count($dupes);
           if ($num > 0) {
