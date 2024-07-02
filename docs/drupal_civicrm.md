@@ -16,52 +16,37 @@ to enable access from your client website(s) will require instead
 that you configure the cors.config stanza in the configuration file 
 at: web/sites/default/services.yml .  
 
-In your intial tests, try setting:
+You can automatically add the required settings by using the Api4
+call Remoteform.GenerateCorsServices via the command:
+
+```
+cv --user=admin api4 Remoteform.GenerateCorsServices path=/path/to/sites/default/services.yml
+```
+
+If you omit the path argument, the settings will be saved in a temp file which
+will be provided as output to the cv command.
+
+This API call respects existing settings in your `services.yml` file so you can
+safely run it even if your services.yml file is populated.
+
+Alternatively, you can modify the file by hand, ensuring it has the following
+values:
+
 ```
   parameters:
     cors.config:
       enabled: true
-      allowedOrigins: ['*']
-      allowedMethods: ['*']
-      allowedHeaders: ['*']
-```
-
-## tightening security
-
-Once you have a working interaction between your (server) civicrm installation 
-and your (client) website, you can begin to dial back the Headers and Methods 
-allowed settings to determine what the minimum privileges required to make 
-your form work might be.  
-
-Start by limiting interactions to ONLY your intended (client) website(s):
-
-```
-allowedOrigins: ['https://www.YOUR_CLIENT_WEBSITE_DOMAIN.org']
-```
-
-Next try limiting the allowed Methods, deleting or restoring one at a time, 
-to determine which are required for successful interactions by your form:
-
-```
-allowedMethods: ['HEAD','GET','POST','PUT']
-```
-
-A custom profile has been found to work between two drupal sites with 
-['GET','POST'] enabled.  As users successfully test contribution forms 
-and other civicrm entities as they may be enabled by future versions 
-of this extension, pull requests are welcome to hone this documentation 
-to reflect that experience.  
-
-Lastly, try with few headers. The following *should* work:
-
-```
-allowedHeaders: ["content-type"]
+      allowedOrigins: 
+        - 'https://www.YOUR_WEBSITE_DOMAIN.org'
+        - 'https://www.ANOTHER_WEBSITE_DOMAIN.org'
+      allowedMethods: ['HEAD','GET','POST','PUT']
+      allowedHeaders: ["content-type"]
 ```
 
 ## enable encryted communication between the host and client servers
 
-Note, that both the client site and the server site must be run with encryption on.  
-Otherwise the connection will be rejected.  
+Note, that both the client site and the server site must be run with encryption
+on (e.g. https). 
 
 ## learn more about CORS
 

@@ -8,22 +8,18 @@ lines of javascript code.
 Currently, only profiles and contribution pages are supported (events and
 petitions are in the works).
 
-## Note for Stripe users
-
-If you are using stripe, this version works with payment intents, but requires
-the patch described in this
-[issue](https://lab.civicrm.org/extensions/stripe/issues/131) to be applied.
-
 ## How does it work?
 
 Full [documentation is available](docs/index.md). See below for an overview.
 
-First, click `Adminstration -> Customize data and screens -> Remote Forms.`
+First, click `Administer -> Customize data and screens -> Remote Forms.`
 
 Enter your web site's address. Only the addresses listed here will be able to
 submit forms to your CiviCRM instance.
 
 ![Choose URLs to allow](/images/cors-configuration.png)
+
+Note: Drupal 8+ users must also [update your services.yml file](docs/drupal_civicrm.md).
 
 Second, edit the profile or contribution page to enable remoteform. Here's an
 example of a profile page (look in `Profile Settings -> Advanced Settings`):
