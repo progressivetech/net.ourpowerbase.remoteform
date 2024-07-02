@@ -2,6 +2,11 @@
 
 -----
 
+**NOTE**: This extension's days are numbered. See [work on oembed
+standard](https://github.com/totten/civicrm-core/blob/master-oembed/ext/oembed/README.md)
+in CiviCRM core. Once oembed is fully functional in CiviCRM, this extension
+will be deprecated and no longer maintained.
+
 Remoteform allows you to add a CiviCRM form to a remote web site via a few
 lines of javascript code.
 
