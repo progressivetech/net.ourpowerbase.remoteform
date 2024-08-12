@@ -318,7 +318,10 @@ function remoteform_civicrm_postProcess($formName, &$form) {
 function remoteform_get_payment_processor_type($id) {
   $details = remoteform_get_contribution_page_details($id);
   $payment_processor_id = $details['payment_processor'];
-
+  // We don't support multiple payment processors, but let's not crash when they're enabled.
+  if (is_array($payment_processor_id)) {
+    $payment_processor_id = $payment_processor_id[0];
+  }
   if ($payment_processor_id) {
     $sql = "SELECT ppt.name FROM civicrm_payment_processor_type ppt JOIN
       civicrm_payment_processor pp ON pp.payment_processor_type_id = ppt.id
