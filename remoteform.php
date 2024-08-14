@@ -197,7 +197,7 @@ function remoteform_civicrm_buildForm($formName, &$form) {
         ->addSelect('payment_processor')
         ->addWhere('id', '=', $id)
         ->execute()->first();
-      if (count($results['payment_processor']) > 1 ) {
+      if (count($results['payment_processor'] ?? []) > 1 ) {
         $code = htmlentities('<!-- WARNING, RemoteForm only works with one payment processor configured. Please switch to just one processor if you want to enable RemoteForm -->');
         $message = E::ts('Please change to just one Payment Processor before enalbing Remote Form.');
       }
