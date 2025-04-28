@@ -8,6 +8,9 @@ class CRM_Remoteform_Page_RemoteForm extends CRM_Core_Page {
   public function run() {
     $this->printCorsHeaders();
 		$data = json_decode(stripslashes(file_get_contents("php://input")));
+    if (empty($data)) {
+      $this->exitError(E::ts("No data was received."));
+    }
     try {
       $data = $this->sanitizeInput($data);
     }
